@@ -13,4 +13,3 @@ class Area:
   def decrease_infection_rate(self):
     return None
 
-  
