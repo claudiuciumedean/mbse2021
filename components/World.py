@@ -1,14 +1,74 @@
 import tkinter as tk
+import Area
 
+
+
+
+
+class World:  
+    def __init__(self):
+        self.frame_size_x = 1000
+        self.frame_size_y = 600
+        self.area_size_x = 200
+        self.area_size_y = 200
+        self.state = Area.AreaStates.GREEN
+        self.create_areas(self.area_size_x, self.area_size_y, self.state)
+
+
+    def create_areas(self, area_size_x, area_size_y, state):
+        self.area_size_x = area_size_x
+        self.area_size_y = area_size_y
+        self.state = state
+
+        self.areas = []
+        for i in range(6):
+            self.areas.append(i)
+
+        print(self.areas)
+        print(self.state)
+
+    def changeColor(self):
+        self.state = Area.area_states
+
+
+
+World()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''     
 def main():  # Main method to run gui
     gui = tk.Tk()
     World(gui, "Corona spreading sumulation", "1000x600")
     gui.mainloop()
     return None
-
-
+    
+    
 class World:  # instance attributes of world upon initialisation
     def __init__(self, gui, title, geometry):
+
+
         self.gui = gui
         self.gui.title(title)
         self.gui.geometry(geometry)
@@ -57,3 +117,4 @@ class World:  # instance attributes of world upon initialisation
 
 
 main()
+'''

@@ -1,3 +1,5 @@
+from enum import Enum
+
 class Area:
   def __init__(self):
     self.start_x_pos
@@ -13,3 +15,10 @@ class Area:
   def decrease_infection_rate(self):
     return None
 
+
+
+
+class AreaStates(Enum):
+  RED = 3  # dangerous
+  ORANGE = 2  # risk
+  GREEN = 1  # safe
