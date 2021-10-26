@@ -4,55 +4,53 @@ import random
 import uuid
 import tkinter as tk
 
-class Person:
-  def __init__(self):
-    self.id = uuid.uuid4()
-    self.x = 0
-    self.y = 0
-    self.infected = False
-
-  def walk(self):
-    self.x += 1
-    self.y += 1
-    print("I person" + str(self.id) + " am walking on X " + str(self.x) + " and on Y " + str(self.y))
-
-  def check_wearable(self):
-    print("Checking my smarty smart watch")
+from components.World import World
+from components.Person import Person
+from CSV_Writer import CSV_Writer
 
 class Simluation_Manager:
   def __init__(self):
     self.env = None
     self.world = None
-    self.simulation_time = 0
-    self.infected_persons = []
-    self.healthy_persons = []
+    self.csv_writer = CSV_Writer(str(uuid.uuid1()))
+    self.simulation_iteration = 0
   
   def start(self):
-    self.env = simpy.rt.RealtimeEnvironment(factor = 1) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
+    persons = []
+    for i in range(0, 1000):
+      persons.append(Person())
+    persons[random.randint(0, 49)].infected = True
+    persons[random.randint(0, 49)].infected = True
+
+    self.world = World(persons)
+    #self.env = simpy.rt.RealtimeEnvironment(factor = .20) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
+    self.env = simpy.Environment()
     self.env.process(self.run())
-    self.env.run(until=20)
+    self.env.run(until=600)
+
+    self.logSimulationStats()
 
   def run(self):
-    persons = []
-    for x in range(200):
-      persons.append(Person())
-
     while True:
-      for person in persons:
-        person.walk()
 
+      self.world.live()
+      self.logSimulationStats()
       yield self.env.timeout(1) #timeout for a second
 
-      for person in persons:
-        person.check_wearable()
 
-      yield self.env.timeout(1)
+  def logSimulationStats(self):
+    self.simulation_iteration += 1
+    infectedPersons = 0
+    healthyPersons = 0
 
-  def warn_persons(self, coordinates):
-    return None
-  
-  def stop(self):
-    return None
+    for person in self.world.persons:
+      if person.infected:
+        infectedPersons += 1
+      else:
+        healthyPersons += 1
+
+    self.csv_writer.write_row([healthyPersons, infectedPersons, self.simulation_iteration])    
+
   
   def register_logs(self):
     return None

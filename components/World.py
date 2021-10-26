@@ -1,19 +1,23 @@
 import tkinter as tk
-import Area
+import components.Area as Area
 
-
-
-
+from Simulation_Constants import Simulation_Constants
 
 class World:  
-    def __init__(self):
-        self.frame_size_x = 1000
-        self.frame_size_y = 600
-        self.area_size_x = 200
-        self.area_size_y = 200
-        self.state = Area.AreaStates.GREEN
-        self.create_areas(self.area_size_x, self.area_size_y, self.state)
+    def __init__(self, persons):
+        self.frame_size_x = Simulation_Constants.WORLD_SIZE
+        self.frame_size_y = Simulation_Constants.WORLD_SIZE
+        self.persons = persons
 
+        #self.area_size_x = Simulation_Constants.AREA_SIZE
+        #self.area_size_y = Simulation_Constants.AREA_SIZE
+        #self.state = Area.AreaStates.GREEN
+        #self.create_areas(self.area_size_x, self.area_size_y, self.state)
+
+    def live(self):
+        for person in self.persons:
+            person.walk()
+            person.wearable.get_close_persons(self.persons)
 
     def create_areas(self, area_size_x, area_size_y, state):
         self.area_size_x = area_size_x
@@ -29,10 +33,6 @@ class World:
 
     def changeColor(self):
         self.state = Area.area_states
-
-
-
-World()
 
 
 

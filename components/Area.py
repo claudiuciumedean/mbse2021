@@ -1,6 +1,6 @@
 from enum import Enum
 
-import World
+import components.World as World
 
 
 class Area:

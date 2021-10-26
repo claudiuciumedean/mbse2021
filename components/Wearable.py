@@ -1,4 +1,4 @@
-from .Person import Person, InfectionSeverity
+from Simulation_Constants import Simulation_Constants
 
 class Wearable:
     """Class Wearable:
@@ -11,45 +11,43 @@ class Wearable:
         6) Repeat from point 3
     """
 
-    def __init__(self):
-        self.person = None
-
-        self.user_risk_level = InfectionSeverity.GREEN
-
-        self.temperature = None
-        self.oxygen = None
-
-    def assign_user(self, person):
-        """Assign the wearable to the given person
-        """
+    def __init__(self, person):
         self.person = person
+        self.user_risk_level = None
+        self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
+        self.oxygen = Simulation_Constants.INITIAL_TEMPERATURE
 
     def distance(self, wearable) -> float:
-        """Return the distance between self and the given wearable (object)
-        """
-        return dist(self.person.x_pos, self.person.y_pos,
-                    wearable.person.x_pos, wearable.person.y_pos)
+        """Return the distance between self and the given wearable (object)"""
+        return dist(self.person.x_pos, self.person.y_pos, wearable.person.x_pos, wearable.person.y_pos)
 
-    def get_close_users(self, wearables: list, radious: float):
-        """Yields all the people inside the given radious.
-        """
-        for w in wearables:
-            if self.distance(w) < radious:
-                yield w
+    def get_close_persons(self, persons: list):
+        """Yields all the people inside a given circle."""
+        close_persons = []
+        
+        for person in persons:
+            if in_circle(self.person.x_pos, self.person.y_pos, Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS, person.x_pos, person.y_pos):
+                close_persons.append(person)
+                
+                if person.infected and not self.person.infected:
+                    self.person.infected = True
+                elif (not person.infected) and self.person.infected:
+                    person.infected = True
+
+                #print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
+        
+        return close_persons
 
     def check_temperature(self):
-        """Check temperature level.
-        """
+        """Check temperature level."""
         self.temperature = self.person.temperature
 
     def check_oxygen(self):
-        """Check oxygen level.
-        """
-        self.oxygen = self.person.oxygen
+        """Check oxygen level."""
+        self.oxygen = self.person.oxygenw
 
     def compute_risk_level(self, wearables: list, radious: float = 2):
-        """Compute the user risk level
-        """
+        """Compute the user risk level"""
         risk_counter = 0
 
         #Points from temperature
@@ -88,11 +86,10 @@ class Wearable:
 #Utility functions
 
 def dist(x1: float, y1: float, x2: float, y2: float) -> float:
-    """Distance between two points.
-    """
+    """Distance between two points."""
     return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
-
-if __name__ == "__main__":
-    print("Some test:")
-    #TODO
+def in_circle(center_x, center_y, radius, x, y):
+    """Checks if two given points are inside a circle between two points."""
+    square_dist = (center_x - x) ** 2 + (center_y - y) ** 2
+    return square_dist <= radius ** 2
