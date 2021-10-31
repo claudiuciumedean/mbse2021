@@ -60,26 +60,33 @@ class Person:
 
         return infected_situation
     
-    def flee(self, x_pos, y_pos, x_pos_risk, y_pos_risk):
-        self.x_pos = x_pos
-        self.y_pos = y_pos
+    def flee(self):   
+        if self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST  < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST  > 0 and self.y_pos - Simulation_Constants.FLEE_DIST  > 0:
+            self.x_pos += random.choice([-Simulation_Constants.FLEE_DIST , Simulation_Constants.FLEE_DIST ])
+            self.y_pos += random.choice([-Simulation_Constants.FLEE_DIST , Simulation_Constants.FLEE_DIST ])
+
+        elif self.x_pos + Simulation_Constants.FLEE_DIST >= Simulation_Constants.WORLD_SIZE or self.y_pos + Simulation_Constants.FLEE_DIST >= Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST > 0 and self.y_pos - Simulation_Constants.FLEE_DIST  > 0:
+            self.x_pos += -Simulation_Constants.FLEE_DIST 
+            self.y_pos += -Simulation_Constants.FLEE_DIST 
+
+        elif self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST <= 0 and self.y_pos - Simulation_Constants.FLEE_DIST <= 0:
+            self.x_pos += Simulation_Constants.FLEE_DIST 
+            self.y_pos += Simulation_Constants.FLEE_DIST 
 
         # distance between person X and a risk person
-        distance = math.sqrt((math.pow(x_pos - x_pos_risk, 2)+math.pow(y_pos - y_pos_risk, 2)))
-        while distance <= 2:
-            if self.x_pos-x_pos_risk < 0:
-                self.x_pos -= np.random.randint(2, self.length)
-            else:
-                self.x_pos += np.random.randint(2, self.length)
-            if self.y_pos-y_pos_risk < 0:
-                self.y_pos -= np.random.randint(2, self.width)
-            else:
-                self.y_pos += np.random.randint(2, self.width)
-            # check if location is within boundary and rectify the over-location
-            self.boundary_constraint(self.x_pos, self.y_pos)
-            distance = math.sqrt((math.pow(self.x_pos - x_pos_risk, 2) + math.pow(self.y_pos - y_pos_risk, 2)))
-
-        return None
+        #distance = math.sqrt((math.pow(x_pos - x_pos_risk, 2)+math.pow(y_pos - y_pos_risk, 2)))
+        #while distance <= 2:
+        #    if self.x_pos-x_pos_risk < 0:
+        #        self.x_pos -= np.random.randint(2, self.length)
+        #    else:
+        #        self.x_pos += np.random.randint(2, self.length)
+        #    if self.y_pos-y_pos_risk < 0:
+        #        self.y_pos -= np.random.randint(2, self.width)
+        #    else:
+        #        self.y_pos += np.random.randint(2, self.width)
+        #    # check if location is within boundary and rectify the over-location
+        #    self.boundary_constraint(self.x_pos, self.y_pos)
+        #    distance = math.sqrt((math.pow(self.x_pos - x_pos_risk, 2) + math.pow(self.y_pos - y_pos_risk, 2)))
 
 
 class InfectionSeverity(Enum):

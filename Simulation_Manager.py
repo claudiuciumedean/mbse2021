@@ -26,7 +26,7 @@ class Simluation_Manager:
     #self.env = simpy.rt.RealtimeEnvironment(factor = .20) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
     self.env = simpy.Environment()
     self.env.process(self.run())
-    self.env.run(until=600)
+    self.env.run(until=2)
 
     self.logSimulationStats()
 
