@@ -7,6 +7,7 @@ import tkinter as tk
 from components.World import World
 from components.Person import Person
 from CSV_Writer import CSV_Writer
+from Simulation_Constants import Simulation_Constants
 
 class Simluation_Manager:
   def __init__(self):
@@ -16,27 +17,29 @@ class Simluation_Manager:
     self.simulation_iteration = 0
   
   def start(self):
+    self.world = World()
     persons = []
-    for i in range(0, 1000):
-      persons.append(Person())
-    persons[random.randint(0, 49)].infected = True
-    persons[random.randint(0, 49)].infected = True
 
-    self.world = World(persons)
-    #self.env = simpy.rt.RealtimeEnvironment(factor = .20) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
+    for i in range(0, Simulation_Constants.POP_SIZE):
+      person = Person(self.world)
+      persons.append(person)
+
+    persons[0].infected = True
+    self.world.persons = persons
+
+    #self.env = simpy.rt.RealtimeEnvironment(factor = .10) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
     self.env = simpy.Environment()
-    self.env.process(self.run())
-    self.env.run(until=2)
+    self.env.process(self.walk())
+
+    self.env.run(until=200)
 
     self.logSimulationStats()
 
-  def run(self):
+  def walk(self):
     while True:
-
-      self.world.live()
+      self.world.person_active()
       self.logSimulationStats()
-      yield self.env.timeout(1) #timeout for a second
-
+      #yield self.env.timeout(0.10) #timeout for a second
 
   def logSimulationStats(self):
     self.simulation_iteration += 1

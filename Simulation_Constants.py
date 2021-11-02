@@ -5,3 +5,4 @@ class Simulation_Constants():
   INITIAL_OXYGEN = 99
   WEARABLE_COMMUNICATION_RADIUS = 20
   FLEE_DIST = 15
+  POP_SIZE = 1000

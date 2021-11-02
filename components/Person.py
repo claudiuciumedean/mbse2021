@@ -11,14 +11,15 @@ from .Area import Area
 from .Wearable import Wearable
 
 class Person:
-    def __init__(self):
+    def __init__(self, world):
         self.id = str(uuid.uuid4())
-        self.wearable = Wearable(self)
+        self.wearable = Wearable(self, world)
         self.world_size = Simulation_Constants.WORLD_SIZE;
         self.x_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
         self.y_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
         self.infected = False
         self.infection_severity = InfectionSeverity.GREEN
+        self.world = world;
 
     def walk(self):
         if self.x_pos < Simulation_Constants.WORLD_SIZE and self.y_pos < Simulation_Constants.WORLD_SIZE and self.x_pos > 0 and self.y_pos > 0:

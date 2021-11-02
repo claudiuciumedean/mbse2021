@@ -11,8 +11,9 @@ class Wearable:
         6) Repeat from point 3
     """
 
-    def __init__(self, person):
+    def __init__(self, person, world):
         self.person = person
+        self.world = world
         self.user_risk_level = None
         self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
         self.oxygen = Simulation_Constants.INITIAL_TEMPERATURE
@@ -21,22 +22,10 @@ class Wearable:
         """Return the distance between self and the given wearable (object)"""
         return dist(self.person.x_pos, self.person.y_pos, wearable.person.x_pos, wearable.person.y_pos)
 
-    def get_close_persons(self, persons: list):
-        """Yields all the people inside a given circle."""
-        close_persons = []
-        
+    def compute_close_persons(self, persons: list):        
         for person in persons:
             if in_circle(self.person.x_pos, self.person.y_pos, Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS, person.x_pos, person.y_pos):
-                close_persons.append(person)
-                
-                if person.infected and not self.person.infected:
-                    self.person.infected = True
-                elif (not person.infected) and self.person.infected:
-                    person.infected = True
-
-                #print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
-        
-        return close_persons
+                self.world.close_persons_detected(self.person, person)
 
     def check_temperature(self):
         """Check temperature level."""
