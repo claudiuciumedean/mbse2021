@@ -26,22 +26,25 @@ class Wearable:
         close_persons = []
         
         for person in persons:
-            if in_circle(self.person.x_pos, self.person.y_pos, Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS, person.x_pos, person.y_pos):
+            if self.distance(person) < Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS:
                 close_persons.append(person)
-                
-                if person.infected and not self.person.infected:
-                    self.person.infected = True
-                elif (not person.infected) and self.person.infected:
-                    person.infected = True
-                    person.deases_started = simulation_time
 
                 #print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
         
         return close_persons
 
+    def update_infected(self, person):
+        if person.infected and not self.person.infected:
+                    self.person.infected = True
+                    self.person.disease_started_time = Simulation_Manager.simulation_iteration
+        elif (not person.infected) and self.person.infected:
+            person.infected = True
+            person.disease_started_time = Simulation_Manager.simulation_iteration
+
+
     def check_temperature(self):
         """Check temperature level."""
-        person.update_desease_status()
+        #person.update_desease_status()
 
         if person.infected:
             self.temperature = 39
@@ -50,7 +53,7 @@ class Wearable:
 
     def check_oxygen(self):
         """Check oxygen level."""
-        person.update_desease_status()
+        #person.update_desease_status()
 
         if person.infected:
             self.temperature = 92
@@ -93,11 +96,21 @@ class Wearable:
                 return True
         return False
 
-    def main(self):
+    def main(self, persons):
         #list of all the persons inside a circle <- get_close_persons()
         #computerisklevel()
         #update infected()
         #emit warning() -> flee
+
+        close_persons = self.get_close_persons(persons)
+        self.compute_risk_level(close_persons)
+        for person in close_person:
+            self.update_infected(person)
+
+
+        #self.emit_warning()
+
+
 
 
 
