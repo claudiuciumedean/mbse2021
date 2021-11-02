@@ -33,6 +33,7 @@ class Wearable:
                     self.person.infected = True
                 elif (not person.infected) and self.person.infected:
                     person.infected = True
+                    person.deases_started = simulation_time
 
                 #print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
         
@@ -40,11 +41,21 @@ class Wearable:
 
     def check_temperature(self):
         """Check temperature level."""
-        self.temperature = self.person.temperature
+        person.update_desease_status()
+
+        if person.infected:
+            self.temperature = 39
+        else:
+            self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
 
     def check_oxygen(self):
         """Check oxygen level."""
-        self.oxygen = self.person.oxygenw
+        person.update_desease_status()
+
+        if person.infected:
+            self.temperature = 92
+        else:
+            self.temperature = Simulation_Constants.INITIAL_OXYGEN
 
     def compute_risk_level(self, wearables: list, radious: float = 2):
         """Compute the user risk level"""
@@ -81,6 +92,16 @@ class Wearable:
             if w.user_risk_level == InfectionSeverity.RED:
                 return True
         return False
+
+    def main(self):
+        #list of all the persons inside a circle <- get_close_persons()
+        #computerisklevel()
+        #update infected()
+        #emit warning() -> flee
+
+
+
+        pass
 
 
 #Utility functions
