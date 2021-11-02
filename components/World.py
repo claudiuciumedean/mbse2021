@@ -17,7 +17,7 @@ class World:
     def live(self):
         for person in self.persons:
             person.walk()
-            person.wearable.get_close_persons(self.persons)
+            person.wearable.main(self.persons)
 
     def create_areas(self, area_size_x, area_size_y, state):
         self.area_size_x = area_size_x
