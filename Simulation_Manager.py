@@ -33,6 +33,7 @@ class Simluation_Manager:
 
     def run(self):
         while True:
+            #print('iter: ', self.simulation_iteration)
             self.world.live()
             self.logSimulationStats()
             yield self.env.timeout(1)  # timeout for a second

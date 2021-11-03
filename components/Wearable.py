@@ -27,12 +27,12 @@ class Wearable:
         """Return the distance between self and the given wearable (object)"""
         return dist(self.person.x_pos, self.person.y_pos, person.x_pos, person.y_pos)
 
-    def get_close_persons(self, persons: list):
+    def get_close_persons(self, persons: list, radious: float = Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS):
         """Yields all the people inside a given circle."""
         close_persons = []
 
         for person in persons:
-            if self.distance(person) < Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS:
+            if self.distance(person) < radious and person != self.person:
                 close_persons.append(person)
 
                 # print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
@@ -78,28 +78,29 @@ class Wearable:
             risk_counter += 1
 
         # Points from close contacts
-        # max_contact_risk = 0
-        # for person in self.get_close_persons(persons):
-        #     # print(person.wearable.user_risk_level)
-        #     if person.wearable.user_risk_level > max_contact_risk:
-        #         max_contact_risk = person.wearable.user_risk_level
-        # risk_counter += max_contact_risk
-        # Compute risk level
-        if risk_counter < 2:
-            self.user_risk_level = InfectionSeverity.GREEN
-        elif risk_counter < 4:
-            self.user_risk_level = InfectionSeverity.ORANGE
-        else:
-            self.user_risk_level = InfectionSeverity.RED
+        max_contact_risk = 0
+        for person in persons:
+            #print(person.wearable.user_risk_level)
+            if person.wearable.user_risk_level > max_contact_risk:
+                max_contact_risk = person.wearable.user_risk_level
+        risk_counter += max_contact_risk
 
-    def emit_warning(self, wearables: list, radious: float = 10) -> bool:
+        #Compute risk level
+        if risk_counter < 2:
+            self.user_risk_level = InfectionSeverity.GREEN.value
+        elif risk_counter < 4:
+            self.user_risk_level = InfectionSeverity.ORANGE.value
+        else:
+            self.user_risk_level = InfectionSeverity.RED.value
+
+    def emit_warning(self, persons: list, radious: float = 10):
         """Return True if there is an high risk user inside the given radious,
            False otherwise.
         """
-        for w in self.get_close_persons(wearables):
-            if w.user_risk_level == InfectionSeverity.RED:
-                return True
-        return False
+        for p in self.get_close_persons(persons, 2*Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS):
+            if p.wearable.user_risk_level == InfectionSeverity.RED.value:
+                self.person.flee()
+                break
 
     def main(self, persons):
         # list of all the persons inside a circle <- get_close_persons()
@@ -113,7 +114,7 @@ class Wearable:
         for person in close_persons:
             self.update_infected(person)
 
-        # self.emit_warning()
+        self.emit_warning(persons)
 
         pass
 
