@@ -21,7 +21,7 @@ class Simluation_Manager:
 
     def start(self):
         persons = []
-        for i in range(0, 300):
+        for i in range(0, 600):
             persons.append(Person())
         persons[random.randint(0, 49)].infected = True
         persons[random.randint(0, 49)].infected = True
@@ -30,19 +30,20 @@ class Simluation_Manager:
         # self.env = simpy.rt.RealtimeEnvironment(factor = .20) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
         self.env = simpy.Environment()
         self.env.process(self.run())
-        self.env.run(until=100)
+        self.env.run(until=24*30)
 
         self.logSimulationStats()
 
     def run(self):
         while True:
             #print('iter: ', self.simulation_iteration)
-            self.logSimulationStats()
+            if self.simulation_iteration % 24 == 0:
+                self.logSimulationStats()   
             self.world.live(self.simulation_iteration)
+            self.simulation_iteration += 1
             yield self.env.timeout(1)  # timeout for a second
 
     def logSimulationStats(self):
-        self.simulation_iteration += 1
         infectedPersons = 0
         healthyPersons = 0
         recoveredPersons = 0
@@ -56,7 +57,7 @@ class Simluation_Manager:
             if person.recovered:
                 recoveredPersons += 1
 
-        print('iter: ', self.simulation_iteration, ', stats: ', healthyPersons, infectedPersons, recoveredPersons)
+        print('Day: ', int(self.simulation_iteration/24), ', stats: ', healthyPersons, infectedPersons, recoveredPersons)
         self.csv_writer.write_row([healthyPersons, infectedPersons, recoveredPersons, self.simulation_iteration])
 
     def register_logs(self):
