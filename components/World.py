@@ -14,10 +14,10 @@ class World:
         #self.state = Area.AreaStates.GREEN
         #self.create_areas(self.area_size_x, self.area_size_y, self.state)
 
-    def live(self):
+    def live(self, time: int):
         for person in self.persons:
             person.walk()
-            person.wearable.main(self.persons)
+            person.wearable.main(self.persons, time)
 
     def create_areas(self, area_size_x, area_size_y, state):
         self.area_size_x = area_size_x

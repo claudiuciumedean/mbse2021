@@ -22,6 +22,7 @@ class Person:
         self.x_pre_pos = self.x_pos
         self.y_pre_pos = self.y_pos
         self.infected = False
+        self.recovered = False
         # self.infection_severity = InfectionSeverity.GREEN
         self.disease_started_time = 0
 
@@ -42,9 +43,10 @@ class Person:
 
         # print(self.id + " x-" + str(self.x_pos) + " y-" + str(self.y_pos))
 
-    # def update_disease_status(self):
-    # if Simulation_Manager.simulation_iteration > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected == True:
-    #     self.infected = False
+    def update_disease_status(self, time: int):
+        if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected == True:
+            self.infected = False
+            self.recovered = True
 
     # if temperature >= Disease_features.TEMPERATURE_WARN:
     #     # temperature >= 37.3 and oxygen <= 93, this person is infected
