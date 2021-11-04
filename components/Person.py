@@ -11,6 +11,8 @@ from Simulation_Constants import Disease_features
 # from .Area import Area
 from .Wearable import Wearable
 
+if Simulation_Constants.FIXED_SEED:
+    random.seed(0)
 
 class Person:
     def __init__(self):
@@ -43,8 +45,19 @@ class Person:
 
         # print(self.id + " x-" + str(self.x_pos) + " y-" + str(self.y_pos))
 
-    def update_disease_status(self, time: int):
-        if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected == True:
+    def update_disease_status(self, persons: list, time: int):
+        for person in self.wearable.get_close_persons(persons, Disease_features.INFECTION_RADIUS):
+            #self get infected by person
+            if person.infected and not self.infected and not self.recovered:
+                self.infected = True
+                self.disease_started_time = time
+            #person get infected by self
+            elif self.infected and not person.infected and not person.recovered:
+                person.infected = True
+                person.disease_started_time = time
+
+        #disease ends for self
+        if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected:
             self.infected = False
             self.recovered = True
 

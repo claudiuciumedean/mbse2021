@@ -3,6 +3,7 @@ import components.Area as Area
 
 from Simulation_Constants import Simulation_Constants
 
+
 class World:  
     def __init__(self, persons):
         self.frame_size_x = Simulation_Constants.WORLD_SIZE
@@ -17,6 +18,7 @@ class World:
     def live(self, time: int):
         for person in self.persons:
             person.walk()
+            person.update_disease_status(self.persons, time)
             person.wearable.main(self.persons, time)
 
     def create_areas(self, area_size_x, area_size_y, state):

@@ -7,7 +7,10 @@ import tkinter as tk
 from components.World import World
 from components.Person import Person
 from CSV_Writer import CSV_Writer
+from Simulation_Constants import Simulation_Constants as SC
 
+if SC.FIXED_SEED:
+    random.seed(0)
 
 class Simluation_Manager:
     def __init__(self):
@@ -49,6 +52,7 @@ class Simluation_Manager:
                 infectedPersons += 1
             else:
                 healthyPersons += 1
+
             if person.recovered:
                 recoveredPersons += 1
 
