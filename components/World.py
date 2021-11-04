@@ -17,7 +17,7 @@ class World:
 
     def live(self, time: int):
         for person in self.persons:
-            person.walk()
+            person.walk2()
             person.update_disease_status(self.persons, time)
             person.wearable.main(self.persons, time)
 

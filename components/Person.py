@@ -45,6 +45,25 @@ class Person:
 
         # print(self.id + " x-" + str(self.x_pos) + " y-" + str(self.y_pos))
 
+    def walk2(self):
+        self.x_pre_pos = self.x_pos
+        self.y_pre_pos = self.y_pos
+
+        new_x_pos = self.x_pos + int(random.gauss(0, 5))
+        new_y_pos = self.y_pos + int(random.gauss(0, 5))
+
+        if new_x_pos > Simulation_Constants.WORLD_SIZE:
+            new_x_pos = Simulation_Constants.WORLD_SIZE
+        if new_y_pos > Simulation_Constants.WORLD_SIZE:
+            new_y_pos = Simulation_Constants.WORLD_SIZE
+        if new_x_pos < 0:
+            new_x_pos = 0
+        if new_y_pos < 0:
+            new_y_pos = 0
+
+        self.x_pos = new_x_pos
+        self.y_pos = new_y_pos
+       
     def update_disease_status(self, persons: list, time: int):
         for person in self.wearable.get_close_persons(persons, Disease_features.INFECTION_RADIUS):
             #self get infected by person
