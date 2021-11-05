@@ -12,10 +12,11 @@ class World:
 
         self.create_areas()
     
-    def person_active(self):
+    def live(self, time: int):
         for person in self.persons:
-            person.walk()
-            person.wearable.compute_close_persons(self.persons)
+            person.walk2()
+            person.update_disease_status(self.persons, time)
+            person.wearable.main(self.persons, time)
 
     def create_areas(self):
         areas = [
@@ -81,30 +82,26 @@ class World:
 
         return None
 
-    def close_persons_detected(self, person_1, person_2):
+    def close_persons_detected(self, person_1, person_2, time):
         if not person_1.infected and (not person_2.infected):
            return
         
         area_1 = self.get_in_area(person_1.x_pos, person_1.y_pos)
         area_2 = self.get_in_area(person_2.x_pos, person_2.y_pos)
+        infected = False
 
         if area_1 != None and area_2 != None and area_1.id == area_2.id:
             infected = random.random() < area_1.infection_rate == 0 if False else True
-
-            if not person_1.infected:
-                person_1.infected = infected
-
-            if not person_2.infected:
-                person_1.infected = infected
-
         else:
             infected = random.random() < 0.1 == 0 if False else True
 
-            if not person_1.infected:
-                person_1.infected = infected
+        if not person_1.infected and not person_1.recovered and infected:
+            person_1.infected = infected
+            person_1.disease_started_time = time
 
-            if not person_2.infected:
-                person_1.infected = infected
+        if not person_2.infected and not person_2.recovered and infected:
+            person_2.infected = infected
+            person_2.disease_started_time = time
 
 
 

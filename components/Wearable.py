@@ -1,57 +1,71 @@
-from Simulation_Constants import Simulation_Constants
+from Simulation_Constants import Simulation_Constants, InfectionSeverity, Disease_features
+
+# import Simulation_Manager
+# from .Person import Person
+
 
 class Wearable:
     """Class Wearable:
         Basic instruction:
         1) Create a new object
         2) Assign it to a person
-        3) Call check_temperature(), check_oxygen()
-        4) Call compute_risk_level() to update the user risk level
-        5) Call emit_warning() to check for nearby high risk people
-        6) Repeat from point 3
+        3) Call main()
+        4) Repeat from point 3
     """
 
     def __init__(self, person, world):
         self.person = person
         self.world = world
-        self.user_risk_level = None
+        self.user_risk_level = 0
         self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
         self.oxygen = Simulation_Constants.INITIAL_TEMPERATURE
 
-    def distance(self, wearable) -> float:
-        """Return the distance between self and the given wearable (object)"""
-        return dist(self.person.x_pos, self.person.y_pos, wearable.person.x_pos, wearable.person.y_pos)
+    def distance(self, person) -> float:
+        """Returns the distance between self and the given wearable (object)"""
+        return dist(self.person.x_pos, self.person.y_pos, person.x_pos, person.y_pos)
 
-    def compute_close_persons(self, persons: list):        
+    def compute_close_persons(self, persons: list, radius: float):
+        close_persons = []
+
         for person in persons:
-            if in_circle(self.person.x_pos, self.person.y_pos, Simulation_Constants.WEARABLE_COMMUNICATION_RADIUS, person.x_pos, person.y_pos):
-                self.world.close_persons_detected(self.person, person)
+            if self.distance(person) < radius and person != self.person:
+                close_persons.append(person)
+        
+        return close_persons
 
-    def check_temperature(self):
+    def check_temperature(self, time: int):
         """Check temperature level."""
-        self.temperature = self.person.temperature
+        if self.person.infected:
+            self.temperature = 39
 
-    def check_oxygen(self):
+        else:
+            self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
+
+    def check_oxygen(self, time: int):
         """Check oxygen level."""
-        self.oxygen = self.person.oxygenw
+        if self.person.infected:
+            self.oxygen = 92
 
-    def compute_risk_level(self, wearables: list, radious: float = 2):
+        else:
+            self.oxygen = Simulation_Constants.INITIAL_OXYGEN
+
+    def compute_risk_level(self, persons: list):
         """Compute the user risk level"""
         risk_counter = 0
 
-        #Points from temperature
-        ranges = [(0, 37.3), (37.3, 38.2), (38.2, 39), (39, 50)]
-        risk_counter += [l < self.temperature <= h for l, h in ranges].index(True)
+        # Points from temperature
+        risk_counter += [l < self.temperature <= h for l, h in Disease_features.TEMP_RANGES].index(True)
 
-        #Points from SpO2
-        if self.oxygen < 95:
+        # Points from SpO2
+        if self.oxygen < Disease_features.OXYGEN_THRESHOLD:
             risk_counter += 1
 
-        #Points from close contacts
+        # Points from close contacts
         max_contact_risk = 0
-        for wearable in self.get_close_users(wearables, radious):
-            if wearable.user_risk_level > max_contact_risk:
-                max_contact_risk = wearable.user_risk_level
+        for person in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_DANGER_RADIUS):
+            #print(person.wearable.user_risk_level)
+            if person.wearable.user_risk_level > max_contact_risk:
+                max_contact_risk = person.wearable.user_risk_level
         risk_counter += max_contact_risk
 
         #Compute risk level
@@ -62,23 +76,32 @@ class Wearable:
         else:
             self.user_risk_level = InfectionSeverity.RED
 
-    def emit_warning(self, wearables: list, radious: float = 10) -> bool:
-        """Return True if there is an high risk user inside the given radious,
-           False otherwise.
+    def emit_warning(self, persons: list, radius: float = 10):
+        """self.person flees if there is a high risk person in the "warning" radius.
         """
-        for w in self.get_close_users(wearables, radious):
-            if w.user_risk_level == InfectionSeverity.RED:
-                return True
-        return False
+        if self.user_risk_level != InfectionSeverity.GREEN:
+            return
+
+        for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
+            if p.wearable.user_risk_level == InfectionSeverity.RED:
+                self.person.flee2()
+                break
+
+    def main(self, persons: list, time: int):
+
+        #check paramters of the person
+        self.check_temperature(time)
+        self.check_oxygen(time)
+
+        #compute the risk level
+        self.compute_risk_level(persons)
+
+        #emit the warning for the user (which in turn calls flee)
+        self.emit_warning(persons)
 
 
-#Utility functions
+# Utility functions
 
 def dist(x1: float, y1: float, x2: float, y2: float) -> float:
     """Distance between two points."""
-    return ((x2-x1)**2 + (y2-y1)**2)**0.5
-
-def in_circle(center_x, center_y, radius, x, y):
-    """Checks if two given points are inside a circle between two points."""
-    square_dist = (center_x - x) ** 2 + (center_y - y) ** 2
-    return square_dist <= radius ** 2
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
