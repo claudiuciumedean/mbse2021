@@ -1,6 +1,3 @@
-from enum import Enum
-
-
 class Simulation_Constants():
     WORLD_SIZE = 500
     AREA_SIZE = 200
@@ -9,6 +6,7 @@ class Simulation_Constants():
     WEARABLE_DANGER_RADIUS = 5
     WEARABLE_WARNING_RADIUS = 10
     FLEE_DIST = 15
+    POP_SIZE = 1000
     DISEASE_DURATION = 14*8
     FIXED_SEED = True
 

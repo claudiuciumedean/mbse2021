@@ -13,8 +13,9 @@ class Wearable:
         4) Repeat from point 3
     """
 
-    def __init__(self, person):
+    def __init__(self, person, world):
         self.person = person
+        self.world = world
         self.user_risk_level = 0
         self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
         self.oxygen = Simulation_Constants.INITIAL_TEMPERATURE
@@ -23,16 +24,13 @@ class Wearable:
         """Returns the distance between self and the given wearable (object)"""
         return dist(self.person.x_pos, self.person.y_pos, person.x_pos, person.y_pos)
 
-    def get_close_persons(self, persons: list, radius: float):
-        """Returns all the people inside a given circle."""
+    def compute_close_persons(self, persons: list, radius: float):
         close_persons = []
 
         for person in persons:
             if self.distance(person) < radius and person != self.person:
                 close_persons.append(person)
-
-                # print(f"{self.person.id} ({self.person.x_pos}, {self.person.y_pos}) and {person.id} ({person.x_pos}, {person.y_pos}) are in the same radius")
-
+        
         return close_persons
 
     def check_temperature(self, time: int):
@@ -64,7 +62,7 @@ class Wearable:
 
         # Points from close contacts
         max_contact_risk = 0
-        for person in self.get_close_persons(persons, Simulation_Constants.WEARABLE_DANGER_RADIUS):
+        for person in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_DANGER_RADIUS):
             #print(person.wearable.user_risk_level)
             if person.wearable.user_risk_level > max_contact_risk:
                 max_contact_risk = person.wearable.user_risk_level
@@ -84,7 +82,7 @@ class Wearable:
         if self.user_risk_level != InfectionSeverity.GREEN:
             return
 
-        for p in self.get_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
+        for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
             if p.wearable.user_risk_level == InfectionSeverity.RED:
                 self.person.flee2()
                 break
@@ -107,9 +105,3 @@ class Wearable:
 def dist(x1: float, y1: float, x2: float, y2: float) -> float:
     """Distance between two points."""
     return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-
-
-#def in_circle(center_x, center_y, radius, x, y):
-#    """Checks if two given points are inside a circle between two points."""
-#    square_dist = (center_x - x) ** 2 + (center_y - y) ** 2
-#    return square_dist <= radius ** 2

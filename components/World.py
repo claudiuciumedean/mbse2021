@@ -1,122 +1,107 @@
-import tkinter as tk
-import components.Area as Area
+import random
 
+from components.Area import Area
 from Simulation_Constants import Simulation_Constants
 
-
 class World:  
-    def __init__(self, persons):
+    def __init__(self):
         self.frame_size_x = Simulation_Constants.WORLD_SIZE
         self.frame_size_y = Simulation_Constants.WORLD_SIZE
-        self.persons = persons
+        self.persons = None
+        self.areas = []
 
-        #self.area_size_x = Simulation_Constants.AREA_SIZE
-        #self.area_size_y = Simulation_Constants.AREA_SIZE
-        #self.state = Area.AreaStates.GREEN
-        #self.create_areas(self.area_size_x, self.area_size_y, self.state)
-
+        self.create_areas()
+    
     def live(self, time: int):
         for person in self.persons:
             person.walk2()
             person.update_disease_status(self.persons, time)
             person.wearable.main(self.persons, time)
 
-    def create_areas(self, area_size_x, area_size_y, state):
-        self.area_size_x = area_size_x
-        self.area_size_y = area_size_y
-        self.state = state
+    def create_areas(self):
+        areas = [
+            {
+                "x": 0,
+                "x_prime": 100,
+                "y": 0,
+                "y_prime": 100,
+                "infection_rate": 0.8 
+            },
+            {
+                "x": 200,
+                "x_prime": 300,
+                "y": 0,
+                "y_prime": 100,
+                "infection_rate": 0.1
+            },
+            {
+                "x": 400,
+                "x_prime": 500,
+                "y": 0,
+                "y_prime": 100,
+                "infection_rate": 0.5
+            },
+            {
+                "x": 0,
+                "x_prime": 100,
+                "y": 400,
+                "y_prime": 500,
+                "infection_rate": 0.9
+            },
+            {
+                "x": 200,
+                "x_prime": 300,
+                "y": 400,
+                "y_prime": 500,
+                "infection_rate": 0.4
+            },
+            {
+                "x": 400,
+                "x_prime": 500,
+                "y": 400,
+                "y_prime": 500,
+                "infection_rate": 0.15
+            }
+        ]
 
-        self.areas = []
-        for i in range(6):
-            self.areas.append(i)
+        for area in areas:
+            self.areas.append(
+                Area(
+                    area["x"],
+                    area["x_prime"],
+                    area["y"],
+                    area["y_prime"],
+                    area["infection_rate"]
+                )
+            )
 
-        print(self.areas)
-        print(self.state)
+    def get_in_area(self, x, y):
+        for area in self.areas:
+            if area.is_in_area(x, y):
+                return area
 
-    def changeColor(self):
-        self.state = Area.area_states
+        return None
 
+    def close_persons_detected(self, person_1, person_2, time):
+        if not person_1.infected and (not person_2.infected):
+           return
+        
+        area_1 = self.get_in_area(person_1.x_pos, person_1.y_pos)
+        area_2 = self.get_in_area(person_2.x_pos, person_2.y_pos)
+        infected = False
 
+        if area_1 != None and area_2 != None and area_1.id == area_2.id:
+            infected = random.random() < area_1.infection_rate == 0 if False else True
+        else:
+            infected = random.random() < 0.1 == 0 if False else True
 
+        if not person_1.infected and not person_1.recovered and infected:
+            person_1.infected = infected
+            person_1.disease_started_time = time
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''     
-def main():  # Main method to run gui
-    gui = tk.Tk()
-    World(gui, "Corona spreading sumulation", "1000x600")
-    gui.mainloop()
-    return None
-    
-    
-class World:  # instance attributes of world upon initialisation
-    def __init__(self, gui, title, geometry):
-
-
-        self.gui = gui
-        self.gui.title(title)
-        self.gui.geometry(geometry)
-
-        self.area1 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="red",
-                              highlightcolor="red",
-                              highlightthickness=5)
-        self.label1 = tk.Label(master=self.area1, text="Area 1")
-        self.label1.place(relx=0.5, rely=0.5, anchor='center')
-        self.area1.place(x=0, y=0)
-
-        self.area2 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="green",
-                              highlightcolor="green",
-                              highlightthickness=5)
-        self.label2 = tk.Label(master=self.area2, text="Area 2")
-        self.label2.place(relx=0.5, rely=0.5, anchor='center')
-        self.area2.place(x=0, y=400)
-
-        self.area3 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="green",
-                              highlightcolor="green",
-                              highlightthickness=5)
-        self.label3 = tk.Label(master=self.area3, text="Area 3")
-        self.label3.place(relx=0.5, rely=0.5, anchor='center')
-        self.area3.place(x=400, y=0)
-
-        self.area4 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="red",
-                              highlightcolor="red",
-                              highlightthickness=5)
-        self.label4 = tk.Label(master=self.area4, text="Area 4")
-        self.label4.place(relx=0.5, rely=0.5, anchor='center')
-        self.area4.place(x=400, y=400)
-
-        self.area5 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="red",
-                              highlightcolor="red",
-                              highlightthickness=5)
-        self.label5 = tk.Label(master=self.area5, text="Area 5")
-        self.label5.place(relx=0.5, rely=0.5, anchor='center')
-        self.area5.place(x=800, y=0)
-
-        self.area6 = tk.Frame(master=self.gui, width=200, height=200, highlightbackground="orange",
-                              highlightcolor="orange",
-                              highlightthickness=5)
-        self.label6 = tk.Label(master=self.area6, text="Area 6")
-        self.label6.place(relx=0.5, rely=0.5, anchor='center')
-        self.area6.place(x=800, y=400)
+        if not person_2.infected and not person_2.recovered and infected:
+            person_2.infected = infected
+            person_2.disease_started_time = time
 
 
-main()
-'''
+

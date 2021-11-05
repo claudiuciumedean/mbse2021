@@ -2,7 +2,6 @@ import simpy
 import time
 import random
 import uuid
-import tkinter as tk
 
 from components.World import World
 from components.Person import Person
@@ -13,56 +12,56 @@ if SC.FIXED_SEED:
     random.seed(0)
 
 class Simluation_Manager:
-    def __init__(self):
-        self.env = None
-        self.world = None
-        self.csv_writer = CSV_Writer(str(uuid.uuid1()))
-        self.simulation_iteration = 0
+  def __init__(self):
+    self.env = None
+    self.world = None
+    self.csv_writer = CSV_Writer(str(uuid.uuid1()))
+    self.simulation_iteration = 0
+  
+  def start(self):
+    self.world = World()
+    persons = []
 
-    def start(self):
-        persons = []
-        for i in range(0, 600):
-            persons.append(Person())
-        persons[random.randint(0, 49)].infected = True
-        persons[random.randint(0, 49)].infected = True
+    for i in range(0, SC.POP_SIZE):
+      person = Person(self.world)
+      persons.append(person)
 
-        self.world = World(persons)
-        # self.env = simpy.rt.RealtimeEnvironment(factor = .20) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
-        self.env = simpy.Environment()
-        self.env.process(self.run())
-        self.env.run(until=(24//SC.TIME_STEP)*SC.DAYS_SIMULATED)
+    persons[0].infected = True
+    self.world.persons = persons
 
-        self.logSimulationStats()
+    #self.env = simpy.rt.RealtimeEnvironment(factor = .10) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
+    self.env = simpy.Environment()
+    self.env.process(self.run())
+    self.env.run(until=(24//SC.TIME_STEP)*SC.DAYS_SIMULATED)
 
-    def run(self):
-        while True:
-            #print('iter: ', self.simulation_iteration)
-            if self.simulation_iteration % (24//SC.TIME_STEP) == 0:
-                self.logSimulationStats()   
-            self.world.live(self.simulation_iteration)
-            self.simulation_iteration += 1
-            yield self.env.timeout(1)  # timeout for a second
+    self.logSimulationStats()
 
-    def logSimulationStats(self):
-        infectedPersons = 0
-        healthyPersons = 0
-        recoveredPersons = 0
+  def run(self):
+      while True:
+        if self.simulation_iteration % (24//SC.TIME_STEP) == 0:
+            self.logSimulationStats()   
+        self.world.live(self.simulation_iteration)
+        self.simulation_iteration += 1
+        yield self.env.timeout(1)  # timeout for a second
 
-        for person in self.world.persons:
-            if person.infected:
-                infectedPersons += 1
-            else:
-                healthyPersons += 1
+  def logSimulationStats(self):
+    infectedPersons = 0
+    healthyPersons = 0
+    recoveredPersons = 0
 
-            if person.recovered:
-                recoveredPersons += 1
+    for person in self.world.persons:
+      if person.infected:
+        infectedPersons += 1
+      else:
+        healthyPersons += 1
 
-        print('Day: ', int(self.simulation_iteration//(24//SC.TIME_STEP)), ' stats: ', healthyPersons, infectedPersons, recoveredPersons)
-        self.csv_writer.write_row([healthyPersons, infectedPersons, recoveredPersons, self.simulation_iteration])
+      if person.recovered:
+        recoveredPersons += 1
 
-    def register_logs(self):
-        return None
-
+    day = int(self.simulation_iteration//(24//SC.TIME_STEP))
+    self.csv_writer.write_row([healthyPersons, infectedPersons, recoveredPersons, day])
+    
+    print('Day: ', day, ' stats: ', healthyPersons, infectedPersons, recoveredPersons)
 
 sim_manager = Simluation_Manager()
 sim_manager.start()

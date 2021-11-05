@@ -15,10 +15,10 @@ if Simulation_Constants.FIXED_SEED:
     random.seed(0)
 
 class Person:
-    def __init__(self):
+    def __init__(self, world):
         self.id = str(uuid.uuid4())
-        self.wearable = Wearable(self)
-        self.world_size = Simulation_Constants.WORLD_SIZE
+        self.wearable = Wearable(self, world)
+        self.world_size = Simulation_Constants.WORLD_SIZE;
         self.x_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
         self.y_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
         self.x_pre_pos = self.x_pos
@@ -27,6 +27,8 @@ class Person:
         self.recovered = False
         # self.infection_severity = InfectionSeverity.GREEN
         self.disease_started_time = 0
+        self.infection_severity = InfectionSeverity.GREEN
+        self.world = world;
 
     def walk(self):
         self.x_pre_pos = self.x_pos
@@ -63,46 +65,15 @@ class Person:
 
         self.x_pos = new_x_pos
         self.y_pos = new_y_pos
-       
+
     def update_disease_status(self, persons: list, time: int):
-        for person in self.wearable.get_close_persons(persons, Disease_features.INFECTION_RADIUS):
-            #self get infected by person
-            if person.infected and not self.infected and not self.recovered:
-                self.infected = True
-                self.disease_started_time = time
-            #person get infected by self
-            elif self.infected and not person.infected and not person.recovered:
-                person.infected = True
-                person.disease_started_time = time
+        for person in self.wearable.compute_close_persons(persons, Disease_features.INFECTION_RADIUS):
+            self.world.close_persons_detected(self, person, time)
 
         #disease ends for self
         if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected:
             self.infected = False
             self.recovered = True
-
-    # if temperature >= Disease_features.TEMPERATURE_WARN:
-    #     # temperature >= 37.3 and oxygen <= 93, this person is infected
-    #     if oxygen <= Disease_features.OXYGEN_UNSAFE:
-    #         self.infection_severity = InfectionSeverity.RED
-    #         self.infected = True
-    #     # temperature >= 37.3 and oxygen > 93, this person is at risk of infected
-    #     else:
-    #         self.infection_severity = InfectionSeverity.ORANGE
-    #         self.infected = False
-    #
-    # if temperature < Disease_features.TEMPERATURE_WARN:
-    #     # temperature < 37.3 and oxygen < 95, this person is at risk of infected
-    #     if oxygen < Disease_features.OXYGEN_SAFE:
-    #         self.infection_severity = InfectionSeverity.ORANGE
-    #         self.infected = False
-    #     # temperature < 37.3 and oxygen > 95, this person is not infected
-    #     else:
-    #         self.infection_severity = InfectionSeverity.GREEN
-    #         self.infected = False
-    #
-    # infected_situation = [self.infection_severity, self.infected]
-    #
-    # return infected_situation
 
     def flee(self):
         if self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST > 0 and self.y_pos - Simulation_Constants.FLEE_DIST > 0:
@@ -120,18 +91,3 @@ class Person:
     def flee2(self):
         self.x_pos = self.x_pre_pos
         self.y_pos = self.y_pre_pos
-
-            # distance between person X and a risk person
-        # distance = math.sqrt((math.pow(x_pos - x_pos_risk, 2)+math.pow(y_pos - y_pos_risk, 2)))
-        # while distance <= 2:
-        #    if self.x_pos-x_pos_risk < 0:
-        #        self.x_pos -= np.random.randint(2, self.length)
-        #    else:
-        #        self.x_pos += np.random.randint(2, self.length)
-        #    if self.y_pos-y_pos_risk < 0:
-        #        self.y_pos -= np.random.randint(2, self.width)
-        #    else:
-        #        self.y_pos += np.random.randint(2, self.width)
-        #    # check if location is within boundary and rectify the over-location
-        #    self.boundary_constraint(self.x_pos, self.y_pos)
-        #    distance = math.sqrt((math.pow(self.x_pos - x_pos_risk, 2) + math.pow(self.y_pos - y_pos_risk, 2)))
