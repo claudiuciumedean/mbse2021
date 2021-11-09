@@ -7,7 +7,7 @@ class Simulation_Constants():
     WEARABLE_WARNING_RADIUS = 10
     FLEE_DIST = 15
     SIGMA = 10
-    POP_SIZE = 300
+    POP_SIZE = 500
     DISEASE_DURATION = 14*8
     FIXED_SEED = True
 

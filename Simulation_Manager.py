@@ -2,13 +2,14 @@ import simpy
 import time
 import random
 import uuid
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 
 from components.World import World
 from components.Person import Person
 from CSV_Writer import CSV_Writer
 from Simulation_Constants import Simulation_Constants as SC
 
-import matplotlib.pyplot as plt
 
 if SC.FIXED_SEED:
     random.seed(0)
@@ -36,7 +37,7 @@ class Simluation_Manager:
     self.env = simpy.Environment()
     self.env.process(self.run())
     self.env.run(until=(24//SC.TIME_STEP)*SC.DAYS_SIMULATED)
-
+    plt.show()
     self.logSimulationStats()
 
   def run(self):
@@ -55,6 +56,20 @@ class Simluation_Manager:
     """
     plt.clf()
     plt.subplot2grid((3, 1), (0, 0), rowspan=2)
+
+    plt.gca().add_patch(Rectangle((0, 0), 100, 100, linewidth=1, edgecolor='r', facecolor='none'))
+    plt.gca().add_patch(Rectangle((200, 0), 100, 100, linewidth=1, edgecolor='g', facecolor='none'))
+    plt.gca().add_patch(Rectangle((400, 0), 100, 100, linewidth=1, edgecolor='y', facecolor='none'))
+
+    plt.gca().add_patch(Rectangle((0, 200), 100, 100, linewidth=1, edgecolor='y', facecolor='none'))
+    plt.gca().add_patch(Rectangle((200, 200), 100, 100, linewidth=1, edgecolor='r', facecolor='none'))
+    plt.gca().add_patch(Rectangle((400, 200), 100, 100, linewidth=1, edgecolor='g', facecolor='none'))
+
+    plt.gca().add_patch(Rectangle((0, 400), 100, 100, linewidth=1, edgecolor='r', facecolor='none'))
+    plt.gca().add_patch(Rectangle((200, 400), 100, 100, linewidth=1, edgecolor='y', facecolor='none'))
+    plt.gca().add_patch(Rectangle((400, 400), 100, 100, linewidth=1, edgecolor='g', facecolor='none'))
+
+
     plt.scatter([p.x_pos for p in self.world.persons], 
                 [p.y_pos for p in self.world.persons], 4, 
                 [{(True, False): 'r', 
@@ -62,6 +77,8 @@ class Simluation_Manager:
                   (False, True): 'b'}[(p.infected, p.recovered)] for p in self.world.persons])
     plt.xlim([0, SC.WORLD_SIZE])
     plt.ylim([0, SC.WORLD_SIZE])
+
+    #Bottom plot
     plt.title('Day: ' + str(self.simulation_iteration//(24//SC.TIME_STEP)) + ' - Hour: ' + str(self.simulation_iteration%(24//SC.TIME_STEP)*SC.TIME_STEP))
     plt.subplot2grid((3, 1), (2, 0), rowspan=1)
     plt.plot([p[0] for p in self.history], 'r')

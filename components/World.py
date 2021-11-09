@@ -25,7 +25,7 @@ class World:
                 "x_prime": 100,
                 "y": 0,
                 "y_prime": 100,
-                "infection_rate": 0.8 
+                "infection_rate": 0.8
             },
             {
                 "x": 200,
@@ -41,6 +41,28 @@ class World:
                 "y_prime": 100,
                 "infection_rate": 0.5
             },
+            {
+                "x": 0,
+                "x_prime": 100,
+                "y": 200,
+                "y_prime": 300,
+                "infection_rate": 0.45
+            },
+            {
+                "x": 200,
+                "x_prime": 300,
+                "y": 200,
+                "y_prime": 300,
+                "infection_rate": 0.9
+            },
+            {
+                "x": 400,
+                "x_prime": 500,
+                "y": 200,
+                "y_prime": 300,
+                "infection_rate": 0.2
+            },
+
             {
                 "x": 0,
                 "x_prime": 100,
