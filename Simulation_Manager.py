@@ -40,10 +40,10 @@ class Simluation_Manager:
     self.logSimulationStats()
 
   def run(self):
-      #plt.rcParams["figure.figsize"] = (5, 6)
+      plt.rcParams["figure.figsize"] = (5, 6)
       while True:
         self.update_history()
-        #self.plot_world()
+        self.plot_world()
         if self.simulation_iteration % (24//SC.TIME_STEP) == 0:
             self.logSimulationStats()   
         self.world.live(self.simulation_iteration)
