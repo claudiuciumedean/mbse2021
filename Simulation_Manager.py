@@ -76,9 +76,9 @@ class Simluation_Manager:
                   (False, True): 'b'}[(p.infected, p.recovered)] for p in self.world.persons])
     plt.xlim([0, SC.WORLD_SIZE])
     plt.ylim([0, SC.WORLD_SIZE])
+    plt.title('Day: ' + str(self.simulation_iteration//(24//SC.TIME_STEP)) + ' - Hour: ' + str(self.simulation_iteration%(24//SC.TIME_STEP)*SC.TIME_STEP))
 
     #Bottom plot
-    plt.title('Day: ' + str(self.simulation_iteration//(24//SC.TIME_STEP)) + ' - Hour: ' + str(self.simulation_iteration%(24//SC.TIME_STEP)*SC.TIME_STEP))
     plt.subplot2grid((3, 1), (2, 0), rowspan=1)
     plt.plot([p[0] for p in self.history], 'r')
     plt.plot([p[1] for p in self.history], 'g')

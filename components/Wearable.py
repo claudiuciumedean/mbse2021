@@ -79,13 +79,16 @@ class Wearable:
     def emit_warning(self, persons: list, radius: float = 10):
         """self.person flees if there is a high risk person in the "warning" radius.
         """
-        if self.user_risk_level != InfectionSeverity.GREEN:
-            return
-
-        for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
-            if p.wearable.user_risk_level == InfectionSeverity.RED:
-                self.person.flee2()
-                break
+        if self.user_risk_level == InfectionSeverity.RED:
+            self.person.sigma = Simulation_Constants.SIGMA/3
+        elif self.user_risk_level == InfectionSeverity.ORANGE:
+            self.person.sigma = Simulation_Constants.SIGMA/2
+        else:
+            self.person.sigma = Simulation_Constants.SIGMA
+            for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
+                if p.wearable.user_risk_level == InfectionSeverity.RED:
+                    self.person.flee2()
+                    break
 
     def main(self, persons: list, time: int):
 
@@ -97,7 +100,8 @@ class Wearable:
         self.compute_risk_level(persons)
 
         #emit the warning for the user (which in turn calls flee)
-        self.emit_warning(persons)
+        if Simulation_Constants.DEVICE_ACTIVE:
+            self.emit_warning(persons)  
 
 
 # Utility functions

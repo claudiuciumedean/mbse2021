@@ -29,6 +29,7 @@ class Person:
         self.disease_started_time = 0
         self.infection_severity = InfectionSeverity.GREEN
         self.world = world;
+        self.sigma = Simulation_Constants.SIGMA
 
     def walk(self):
         self.x_pre_pos = self.x_pos
@@ -51,8 +52,8 @@ class Person:
         self.x_pre_pos = self.x_pos
         self.y_pre_pos = self.y_pos
 
-        new_x_pos = self.x_pos + int(random.gauss(0, Simulation_Constants.SIGMA))
-        new_y_pos = self.y_pos + int(random.gauss(0, Simulation_Constants.SIGMA))
+        new_x_pos = self.x_pos + int(random.gauss(0, self.sigma))
+        new_y_pos = self.y_pos + int(random.gauss(0, self.sigma))
 
         if new_x_pos > Simulation_Constants.WORLD_SIZE:
             new_x_pos = Simulation_Constants.WORLD_SIZE

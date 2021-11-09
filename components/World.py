@@ -3,6 +3,10 @@ import random
 from components.Area import Area
 from Simulation_Constants import Simulation_Constants
 
+
+if Simulation_Constants.FIXED_SEED:
+    random.seed(0)
+
 class World:  
     def __init__(self):
         self.frame_size_x = Simulation_Constants.WORLD_SIZE

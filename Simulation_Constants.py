@@ -2,7 +2,7 @@ class Simulation_Constants():
     WORLD_SIZE = 500
     POP_SIZE = 500
     WEARABLE_DANGER_RADIUS = 5
-    WEARABLE_WARNING_RADIUS = 10
+    WEARABLE_WARNING_RADIUS = 15
     SIGMA = 10
 
     AREA_SIZE = 100
@@ -12,7 +12,8 @@ class Simulation_Constants():
     DISEASE_DURATION = 14*8
     FIXED_SEED = True
     TIME_STEP = 3 #Hours
-    DAYS_SIMULATED = 60
+    DAYS_SIMULATED = 120
+    DEVICE_ACTIVE = True
 
 
 class InfectionSeverity():
