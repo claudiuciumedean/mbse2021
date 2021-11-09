@@ -51,8 +51,8 @@ class Person:
         self.x_pre_pos = self.x_pos
         self.y_pre_pos = self.y_pos
 
-        new_x_pos = self.x_pos + int(random.gauss(0, 5))
-        new_y_pos = self.y_pos + int(random.gauss(0, 5))
+        new_x_pos = self.x_pos + int(random.gauss(0, Simulation_Constants.SIGMA))
+        new_y_pos = self.y_pos + int(random.gauss(0, Simulation_Constants.SIGMA))
 
         if new_x_pos > Simulation_Constants.WORLD_SIZE:
             new_x_pos = Simulation_Constants.WORLD_SIZE
