@@ -15,7 +15,7 @@ if Simulation_Constants.FIXED_SEED:
     random.seed(0)
 
 class Person:
-    def __init__(self, world):
+    def __init__(self, world, explorer):
         self.id = str(uuid.uuid4())
         self.wearable = Wearable(self, world)
         self.world_size = Simulation_Constants.WORLD_SIZE;
@@ -25,11 +25,14 @@ class Person:
         self.y_pre_pos = self.y_pos
         self.infected = False
         self.recovered = False
+        self.explorer = explorer
+        self.dead = False
         # self.infection_severity = InfectionSeverity.GREEN
         self.disease_started_time = 0
         self.infection_severity = InfectionSeverity.GREEN
         self.world = world;
-        self.sigma = Simulation_Constants.SIGMA
+        self.sigma = Simulation_Constants.SIGMA_EXPLORERS if self.explorer else Simulation_Constants.SIGMA_RETURNERS 
+        #true if explorer else false
 
     def walk(self):
         self.x_pre_pos = self.x_pos
@@ -52,8 +55,10 @@ class Person:
         self.x_pre_pos = self.x_pos
         self.y_pre_pos = self.y_pos
 
-        new_x_pos = self.x_pos + int(random.gauss(0, self.sigma))
-        new_y_pos = self.y_pos + int(random.gauss(0, self.sigma))
+
+ 
+        new_x_pos = self.x_pos + random.uniform(-self.sigma, self.sigma)
+        new_y_pos = self.y_pos + random.uniform(-self.sigma, self.sigma)
 
         if new_x_pos > Simulation_Constants.WORLD_SIZE:
             new_x_pos = Simulation_Constants.WORLD_SIZE
@@ -72,9 +77,15 @@ class Person:
             self.world.close_persons_detected(self, person, time)
 
         #disease ends for self
+        #print(self.wearable.temperature, self.wearable.oxygen)
         if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected:
+            
+            print(self.wearable.temperature, self.wearable.oxygen)
+            if self.wearable.check_temperature(time) >= 39 and self.wearable.check_oxygen(time) <= 93:
+              self.dead = True
+            else:
+              self.recovered = True
             self.infected = False
-            self.recovered = True
 
     def flee(self):
         if self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST > 0 and self.y_pos - Simulation_Constants.FLEE_DIST > 0:

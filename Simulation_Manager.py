@@ -27,7 +27,10 @@ class Simluation_Manager:
     persons = []
 
     for i in range(0, SC.POP_SIZE):
-      person = Person(self.world)
+      if i%2==0 and SC.POP_RATIO == 1:
+        person = Person(self.world, True)
+      else:
+        person = Person(self.world, False)
       persons.append(person)
 
     persons[0].infected = True
@@ -45,8 +48,10 @@ class Simluation_Manager:
         self.update_history()
         self.plot_world()
         if self.simulation_iteration % (24//SC.TIME_STEP) == 0:
-            self.logSimulationStats()   
+            self.logSimulationStats() 
+        self.world.daily_infected_counter = 0
         self.world.live(self.simulation_iteration)
+
         self.simulation_iteration += 1
         yield self.env.timeout(1)  # timeout for a second
 
@@ -54,7 +59,7 @@ class Simluation_Manager:
     """Plot the positions of the persons in the world, and their current status as color.
     """
     plt.clf()
-    plt.subplot2grid((3, 1), (0, 0), rowspan=2)
+    plt.subplot2grid((4, 1), (0, 0), rowspan=2)
 
     plt.gca().add_patch(Rectangle((0, 0), 100, 100, linewidth=1, edgecolor='r', facecolor='none'))
     plt.gca().add_patch(Rectangle((200, 0), 100, 100, linewidth=1, edgecolor='g', facecolor='none'))
@@ -78,11 +83,19 @@ class Simluation_Manager:
     plt.ylim([0, SC.WORLD_SIZE])
     plt.title('Day: ' + str(self.simulation_iteration//(24//SC.TIME_STEP)) + ' - Hour: ' + str(self.simulation_iteration%(24//SC.TIME_STEP)*SC.TIME_STEP))
 
-    #Bottom plot
-    plt.subplot2grid((3, 1), (2, 0), rowspan=1)
+    #MID plot
+    plt.subplot2grid((4, 1), (2, 0), rowspan=1)
     plt.plot([p[0] for p in self.history], 'r')
     plt.plot([p[1] for p in self.history], 'g')
     plt.plot([p[2] for p in self.history], 'b')
+    plt.plot([p[3] for p in self.history], 'k')
+    plt.xticks([i for i in range(self.simulation_iteration+1)],
+               ['Day: ' + str(i//(24//SC.TIME_STEP)) if (i%(24//SC.TIME_STEP)*SC.TIME_STEP) == 0 else '' for i in range(self.simulation_iteration+1)],
+              rotation='vertical')
+
+    #Bottom plot
+    plt.subplot2grid((4, 1), (3, 0), rowspan=1)
+    plt.plot([p[4] for p in self.history], 'r')
     plt.xticks([i for i in range(self.simulation_iteration+1)],
                ['Day: ' + str(i//(24//SC.TIME_STEP)) if (i%(24//SC.TIME_STEP)*SC.TIME_STEP) == 0 else '' for i in range(self.simulation_iteration+1)],
               rotation='vertical')
@@ -92,6 +105,7 @@ class Simluation_Manager:
     infectedPersons = 0
     healthyPersons = 0
     recoveredPersons = 0
+    deadPersons = 0
 
     for person in self.world.persons:
       if person.infected:
@@ -102,7 +116,11 @@ class Simluation_Manager:
       if person.recovered:
         recoveredPersons += 1
 
-    self.history.append([infectedPersons, healthyPersons, recoveredPersons])
+      if person.dead:
+          deadPersons += 1
+
+    #self.history.append([infectedPersons, healthyPersons, recoveredPersons])
+    self.history.append([infectedPersons, healthyPersons, recoveredPersons, deadPersons, self.world.daily_infected_counter])
 
   def logSimulationStats(self):
     infectedPersons = 0

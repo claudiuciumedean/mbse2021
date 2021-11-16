@@ -1,4 +1,5 @@
 from Simulation_Constants import Simulation_Constants, InfectionSeverity, Disease_features
+import random
 
 # import Simulation_Manager
 # from .Person import Person
@@ -35,19 +36,29 @@ class Wearable:
 
     def check_temperature(self, time: int):
         """Check temperature level."""
-        if self.person.infected:
-            self.temperature = 39
-
+        #1-7 low-mid temperature
+        #8-14 high-mid temperature
+        #either death or alive
+        #print(time, self.person.disease_started_time, 7*(24//Simulation_Constants.TIME_STEP))
+        #print(time, self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP))
+        if time <= self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP):
+            self.temperature = random.uniform(37.3, 38)
+        elif self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP) < time <= self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP):
+            self.temperature = random.uniform(38, 40)
+            #print("high temperature")
         else:
             self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
+        return self.temperature
 
     def check_oxygen(self, time: int):
         """Check oxygen level."""
-        if self.person.infected:
-            self.oxygen = 92
-
+        if time <= self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP):
+            self.oxygen = random.uniform(95, 99)
+        elif self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP) < time <= self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP):
+            self.oxygen = random.uniform(90, 95)
         else:
             self.oxygen = Simulation_Constants.INITIAL_OXYGEN
+        return self.oxygen
 
     def compute_risk_level(self, persons: list):
         """Compute the user risk level"""
@@ -79,12 +90,12 @@ class Wearable:
     def emit_warning(self, persons: list, radius: float = 10):
         """self.person flees if there is a high risk person in the "warning" radius.
         """
-        if self.user_risk_level == InfectionSeverity.RED:
-            self.person.sigma = Simulation_Constants.SIGMA/3
-        elif self.user_risk_level == InfectionSeverity.ORANGE:
-            self.person.sigma = Simulation_Constants.SIGMA/2
+        if self.user_risk_level == InfectionSeverity.RED and self.person.explorer:
+            self.person.sigma = self.person.sigma/3
+        elif self.user_risk_level == InfectionSeverity.ORANGE and self.person.explorer:
+            self.person.sigma = self.person.sigma/2
         else:
-            self.person.sigma = Simulation_Constants.SIGMA
+            self.person.sigma = Simulation_Constants.SIGMA_EXPLORERS if self.person.explorer else Simulation_Constants.SIGMA_RETURNERS 
             for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
                 if p.wearable.user_risk_level == InfectionSeverity.RED:
                     self.person.flee2()

@@ -13,7 +13,7 @@ class World:
         self.frame_size_y = Simulation_Constants.WORLD_SIZE
         self.persons = None
         self.areas = []
-
+        self.daily_infected_counter = 0
         self.create_areas()
     
     def live(self, time: int):
@@ -122,10 +122,12 @@ class World:
             infected = random.random() < 0.1 == 0 if False else True
 
         if not person_1.infected and not person_1.recovered and infected:
+            self.daily_infected_counter += 1
             person_1.infected = infected
             person_1.disease_started_time = time
 
         if not person_2.infected and not person_2.recovered and infected:
+            self.daily_infected_counter += 1
             person_2.infected = infected
             person_2.disease_started_time = time
 

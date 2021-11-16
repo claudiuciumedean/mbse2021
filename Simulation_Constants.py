@@ -1,9 +1,11 @@
 class Simulation_Constants():
     WORLD_SIZE = 500
     POP_SIZE = 500
+    POP_RATIO = 1 #ratio between returns and explorers
     WEARABLE_DANGER_RADIUS = 5
     WEARABLE_WARNING_RADIUS = 15
-    SIGMA = 10
+    SIGMA_RETURNERS = 5
+    SIGMA_EXPLORERS =15
 
     AREA_SIZE = 100
     FLEE_DIST = 15
