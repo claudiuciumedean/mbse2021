@@ -7,6 +7,8 @@ class Simulation_Constants():
     SIGMA_RETURNERS = 5
     SIGMA_EXPLORERS =15
 
+    REBEL_PERCENTAGE = 0.5
+
     AREA_SIZE = 100
     FLEE_DIST = 15
     INITIAL_TEMPERATURE = 37.0

@@ -90,6 +90,9 @@ class Wearable:
     def emit_warning(self, persons: list, radius: float = 10):
         """self.person flees if there is a high risk person in the "warning" radius.
         """
+        rebel = random.random() < Simulation_Constants.REBEL_PERCENTAGE if False else True
+        if rebel:
+            return
         if self.user_risk_level == InfectionSeverity.RED and self.person.explorer:
             self.person.sigma = self.person.sigma/3
         elif self.user_risk_level == InfectionSeverity.ORANGE and self.person.explorer:
