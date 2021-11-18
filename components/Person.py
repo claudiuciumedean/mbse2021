@@ -1,105 +1,86 @@
 import random
-import numpy as np
-import math
 import uuid
 
 # import Simulation_Manager
-from Simulation_Constants import Simulation_Constants
-from Simulation_Constants import InfectionSeverity
-from Simulation_Constants import Disease_features
+from Simulation_Constants import Simulation_Constants as sc
+from Simulation_Constants import PersonStatus, PersonBehaviour
 
-# from .Area import Area
 from .Wearable import Wearable
 
-if Simulation_Constants.FIXED_SEED:
+if sc.FIXED_SEED:
     random.seed(0)
 
 class Person:
-    def __init__(self, world, explorer):
+    def __init__(self, world, status=PersonStatus.HEALTHY, behaviour=PersonBehaviour.RETURNER):
         self.id = str(uuid.uuid4())
-        self.wearable = Wearable(self, world)
-        self.world_size = Simulation_Constants.WORLD_SIZE;
-        self.x_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
-        self.y_pos = random.randint(0, Simulation_Constants.WORLD_SIZE)
-        self.x_pre_pos = self.x_pos
-        self.y_pre_pos = self.y_pos
-        self.infected = False
-        self.recovered = False
-        self.explorer = explorer
-        self.dead = False
-        # self.infection_severity = InfectionSeverity.GREEN
-        self.disease_started_time = 0
-        self.infection_severity = InfectionSeverity.GREEN
+        self.wearable = Wearable(self)
         self.world = world;
-        self.sigma = Simulation_Constants.SIGMA_EXPLORERS if self.explorer else Simulation_Constants.SIGMA_RETURNERS 
-        #true if explorer else false
+        self.world_size = sc.WORLD_SIZE;
+        self.x = random.uniform(0, sc.WORLD_SIZE)
+        self.y = random.uniform(0, sc.WORLD_SIZE)
+        self.x_pre = self.x
+        self.y_pre = self.y
+
+        self.status = status
+        self.behaviour = behaviour
+        self.start_behaviour = self.behaviour
+        self.disease_started_time = 0
+        self.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS,
+                          PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS,
+                          PersonBehaviour.FLEE: 0,
+                          PersonBehaviour.FREEZE: 0}[self.behaviour]
+        self.temperature = sc.INITIAL_TEMPERATURE
+        self.oxygen = sc.INITIAL_OXYGEN
 
     def walk(self):
-        self.x_pre_pos = self.x_pos
-        self.y_pre_pos = self.y_pos
-        if self.x_pos < Simulation_Constants.WORLD_SIZE and self.y_pos < Simulation_Constants.WORLD_SIZE and self.x_pos > 0 and self.y_pos > 0:
-            self.x_pos += random.choice([-1, 1])
-            self.y_pos += random.choice([-1, 1])
+        if self.behaviour == PersonBehaviour.FREEZE:
+            return
 
-        elif self.x_pos == Simulation_Constants.WORLD_SIZE or self.y_pos == Simulation_Constants.WORLD_SIZE and self.x_pos > 0 and self.y_pos > 0:
-            self.x_pos -= 1
-            self.y_pos += 1
+        elif self.behaviour == PersonBehaviour.FLEE:
+            self.x = self.x_pre
+            self.y = self.y_pre
+            self.behaviour = self.start_behaviour
+            return
 
-        elif self.x_pos < Simulation_Constants.WORLD_SIZE and self.y_pos < Simulation_Constants.WORLD_SIZE and self.x_pos == 0 and self.y_pos == 0:
-            self.x_pos += 1
-            self.y_pos += 1
+        else:
+            self.x_pre = self.x
+            self.y_pre = self.y
+         
+            self.x += random.uniform(-self.walk_step, self.walk_step)
+            self.y += random.uniform(-self.walk_step, self.walk_step)
 
-        # print(self.id + " x-" + str(self.x_pos) + " y-" + str(self.y_pos))
+            if self.x > sc.WORLD_SIZE:
+                self.x = sc.WORLD_SIZE
+            if self.y > sc.WORLD_SIZE:
+                self.y = sc.WORLD_SIZE
+            if self.x < 0:
+                self.x = 0
+            if self.y < 0:
+                self.y = 0
 
-    def walk2(self):
-        self.x_pre_pos = self.x_pos
-        self.y_pre_pos = self.y_pos
+    def update_disease_status(self, time: int):
 
+      if self.status == PersonStatus.INFECTED:
 
- 
-        new_x_pos = self.x_pos + random.uniform(-self.sigma, self.sigma)
-        new_y_pos = self.y_pos + random.uniform(-self.sigma, self.sigma)
+        if time < self.disease_started_time + sc.DISEASE_DURATION/4:
+            self.temperature = sc.INITIAL_TEMPERATURE
+            self.oxygen = sc.INITIAL_OXYGEN 
 
-        if new_x_pos > Simulation_Constants.WORLD_SIZE:
-            new_x_pos = Simulation_Constants.WORLD_SIZE
-        if new_y_pos > Simulation_Constants.WORLD_SIZE:
-            new_y_pos = Simulation_Constants.WORLD_SIZE
-        if new_x_pos < 0:
-            new_x_pos = 0
-        if new_y_pos < 0:
-            new_y_pos = 0
+        elif time < self.disease_started_time + sc.DISEASE_DURATION/2:
+            self.temperature = random.uniform(37.3, 38.5)
+            self.oxygen = random.uniform(95, 99)
 
-        self.x_pos = new_x_pos
-        self.y_pos = new_y_pos
-
-    def update_disease_status(self, persons: list, time: int):
-        for person in self.wearable.compute_close_persons(persons, Disease_features.INFECTION_RADIUS):
-            self.world.close_persons_detected(self, person, time)
-
-        #disease ends for self
-        #print(self.wearable.temperature, self.wearable.oxygen)
-        if time > self.disease_started_time + Simulation_Constants.DISEASE_DURATION and self.infected:
-            
-            print(self.wearable.temperature, self.wearable.oxygen)
-            if self.wearable.check_temperature(time) >= 39 and self.wearable.check_oxygen(time) <= 93:
-              self.dead = True
+        elif time < self.disease_started_time + sc.DISEASE_DURATION:
+            self.temperature = random.uniform(38, 40)
+            self.oxygen = random.uniform(85, 99) 
+                
+        else:
+            if self.temperature >= 39.5 and self.oxygen <= 90:
+                self.status = PersonStatus.DEAD
+                self.behaviour = PersonBehaviour.FREEZE
+                self.temperature = 0
+                self.oxygen = 0
             else:
-              self.recovered = True
-            self.infected = False
-
-    def flee(self):
-        if self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST > 0 and self.y_pos - Simulation_Constants.FLEE_DIST > 0:
-            self.x_pos += random.choice([-Simulation_Constants.FLEE_DIST, Simulation_Constants.FLEE_DIST])
-            self.y_pos += random.choice([-Simulation_Constants.FLEE_DIST, Simulation_Constants.FLEE_DIST])
-
-        elif self.x_pos + Simulation_Constants.FLEE_DIST >= Simulation_Constants.WORLD_SIZE or self.y_pos + Simulation_Constants.FLEE_DIST >= Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST > 0 and self.y_pos - Simulation_Constants.FLEE_DIST > 0:
-            self.x_pos += -Simulation_Constants.FLEE_DIST
-            self.y_pos += -Simulation_Constants.FLEE_DIST
-
-        elif self.x_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.y_pos + Simulation_Constants.FLEE_DIST < Simulation_Constants.WORLD_SIZE and self.x_pos - Simulation_Constants.FLEE_DIST <= 0 and self.y_pos - Simulation_Constants.FLEE_DIST <= 0:
-            self.x_pos += Simulation_Constants.FLEE_DIST
-            self.y_pos += Simulation_Constants.FLEE_DIST
-
-    def flee2(self):
-        self.x_pos = self.x_pre_pos
-        self.y_pos = self.y_pre_pos
+                self.status = PersonStatus.RECOVERED
+                self.temperature = sc.INITIAL_TEMPERATURE
+                self.oxygen = sc.INITIAL_OXYGEN         

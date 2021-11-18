@@ -1,26 +1,45 @@
 import random
 
 from components.Area import Area
-from Simulation_Constants import Simulation_Constants
+from Simulation_Constants import Simulation_Constants as sc
+from Simulation_Constants import Disease_features
+from Simulation_Constants import PersonStatus
 
 
-if Simulation_Constants.FIXED_SEED:
+if sc.FIXED_SEED:
     random.seed(0)
 
 class World:  
     def __init__(self):
-        self.frame_size_x = Simulation_Constants.WORLD_SIZE
-        self.frame_size_y = Simulation_Constants.WORLD_SIZE
+        self.frame_size_x = sc.WORLD_SIZE
+        self.frame_size_y = sc.WORLD_SIZE
         self.persons = None
         self.areas = []
-        self.daily_infected_counter = 0
+        self.counter = {PersonStatus.HEALTHY: 0,
+                        PersonStatus.INFECTED: 0,
+                        PersonStatus.DEAD: 0,
+                        PersonStatus.RECOVERED: 0}
         self.create_areas()
     
     def live(self, time: int):
+        self.counter = {PersonStatus.HEALTHY: 0,
+                        PersonStatus.INFECTED: 0,
+                        PersonStatus.DEAD: 0,
+                        PersonStatus.RECOVERED: 0}
+
         for person in self.persons:
-            person.walk2()
-            person.update_disease_status(self.persons, time)
-            person.wearable.main(self.persons, time)
+            self.counter[person.status] += 1 
+            person.walk()
+
+        for person in self.persons:
+            for close_person in person.wearable.compute_close_persons(self.persons, Disease_features.INFECTION_RADIUS):
+                self.close_persons_detected(person, close_person, time)
+
+        for person in self.persons:
+            person.update_disease_status(time)
+
+        for person in self.persons:
+            person.wearable.main(self.persons)
 
     def create_areas(self):
         areas = [
@@ -109,27 +128,20 @@ class World:
         return None
 
     def close_persons_detected(self, person_1, person_2, time):
-        if not person_1.infected and (not person_2.infected):
+        if person_1.status != PersonStatus.INFECTED and person_2.status != PersonStatus.INFECTED:
            return
         
-        area_1 = self.get_in_area(person_1.x_pos, person_1.y_pos)
-        area_2 = self.get_in_area(person_2.x_pos, person_2.y_pos)
-        infected = False
+        area_1 = self.get_in_area(person_1.x, person_1.y)
+        area_2 = self.get_in_area(person_2.x, person_2.y)
+        infection_prob =  area_1.infection_rate if area_1 != None and area_2 != None and area_1.id == area_2.id else 0.1
 
-        if area_1 != None and area_2 != None and area_1.id == area_2.id:
-            infected = random.random() < area_1.infection_rate == 0 if False else True
-        else:
-            infected = random.random() < 0.1 == 0 if False else True
+        infected = True if random.random() < infection_prob else False
 
-        if not person_1.infected and not person_1.recovered and infected:
-            self.daily_infected_counter += 1
-            person_1.infected = infected
+        if person_1.status == PersonStatus.HEALTHY and infected:
+            person_1.status = PersonStatus.INFECTED
             person_1.disease_started_time = time
 
-        if not person_2.infected and not person_2.recovered and infected:
-            self.daily_infected_counter += 1
-            person_2.infected = infected
+        if person_2.status == PersonStatus.HEALTHY and infected:
+            person_2.status = PersonStatus.INFECTED
             person_2.disease_started_time = time
-
-
 

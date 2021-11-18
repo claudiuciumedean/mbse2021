@@ -1,29 +1,21 @@
-from Simulation_Constants import Simulation_Constants, InfectionSeverity, Disease_features
 import random
+from Simulation_Constants import Simulation_Constants as sc
+from Simulation_Constants import InfectionSeverity, Disease_features
+from Simulation_Constants import PersonStatus, PersonBehaviour
 
-# import Simulation_Manager
-# from .Person import Person
-
+if sc.FIXED_SEED:
+    random.seed(0)
 
 class Wearable:
-    """Class Wearable:
-        Basic instruction:
-        1) Create a new object
-        2) Assign it to a person
-        3) Call main()
-        4) Repeat from point 3
-    """
 
-    def __init__(self, person, world):
+    def __init__(self, person):
         self.person = person
-        self.world = world
         self.user_risk_level = 0
-        self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
-        self.oxygen = Simulation_Constants.INITIAL_TEMPERATURE
+        self.old_risk_counter = 0
 
     def distance(self, person) -> float:
         """Returns the distance between self and the given wearable (object)"""
-        return dist(self.person.x_pos, self.person.y_pos, person.x_pos, person.y_pos)
+        return dist(self.person.x, self.person.y, person.x, person.y)
 
     def compute_close_persons(self, persons: list, radius: float):
         close_persons = []
@@ -34,50 +26,30 @@ class Wearable:
         
         return close_persons
 
-    def check_temperature(self, time: int):
-        """Check temperature level."""
-        #1-7 low-mid temperature
-        #8-14 high-mid temperature
-        #either death or alive
-        #print(time, self.person.disease_started_time, 7*(24//Simulation_Constants.TIME_STEP))
-        #print(time, self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP))
-        if time <= self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP):
-            self.temperature = random.uniform(37.3, 38)
-        elif self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP) < time <= self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP):
-            self.temperature = random.uniform(38, 40)
-            #print("high temperature")
-        else:
-            self.temperature = Simulation_Constants.INITIAL_TEMPERATURE
-        return self.temperature
-
-    def check_oxygen(self, time: int):
-        """Check oxygen level."""
-        if time <= self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP):
-            self.oxygen = random.uniform(95, 99)
-        elif self.person.disease_started_time + 7*(24//Simulation_Constants.TIME_STEP) < time <= self.person.disease_started_time + 13*(24//Simulation_Constants.TIME_STEP):
-            self.oxygen = random.uniform(90, 95)
-        else:
-            self.oxygen = Simulation_Constants.INITIAL_OXYGEN
-        return self.oxygen
-
     def compute_risk_level(self, persons: list):
         """Compute the user risk level"""
+
         risk_counter = 0
 
         # Points from temperature
-        risk_counter += [l < self.temperature <= h for l, h in Disease_features.TEMP_RANGES].index(True)
+        risk_counter += [l < self.person.temperature <= h for l, h in Disease_features.TEMP_RANGES].index(True)
 
         # Points from SpO2
-        if self.oxygen < Disease_features.OXYGEN_THRESHOLD:
+        if self.person.oxygen < Disease_features.OXYGEN_THRESHOLD:
             risk_counter += 1
 
         # Points from close contacts
         max_contact_risk = 0
-        for person in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_DANGER_RADIUS):
+        for person in self.compute_close_persons(persons, sc.WEARABLE_DANGER_RADIUS):
             #print(person.wearable.user_risk_level)
             if person.wearable.user_risk_level > max_contact_risk:
                 max_contact_risk = person.wearable.user_risk_level
         risk_counter += max_contact_risk
+
+        # Risk counter is decreased slowly in time
+        if risk_counter < self.old_risk_counter:
+            risk_counter = self.old_risk_counter-1
+        self.old_risk_counter = risk_counter
 
         #Compute risk level
         if risk_counter < 2:
@@ -87,34 +59,44 @@ class Wearable:
         else:
             self.user_risk_level = InfectionSeverity.RED
 
-    def emit_warning(self, persons: list, radius: float = 10):
+    def emit_warning(self, persons: list):
         """self.person flees if there is a high risk person in the "warning" radius.
         """
-        rebel = random.random() < Simulation_Constants.REBEL_PERCENTAGE if False else True
-        if rebel:
+        if random.random() < sc.REBEL_PERCENTAGE:
             return
-        if self.user_risk_level == InfectionSeverity.RED and self.person.explorer:
-            self.person.sigma = self.person.sigma/3
-        elif self.user_risk_level == InfectionSeverity.ORANGE and self.person.explorer:
-            self.person.sigma = self.person.sigma/2
+        if self.user_risk_level == InfectionSeverity.RED:
+            self.person.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS/10,
+                                     PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS/2,
+                                     PersonBehaviour.FLEE: 0,
+                                     PersonBehaviour.FREEZE: 0}[self.person.behaviour]
+
+        elif self.user_risk_level == InfectionSeverity.ORANGE:
+            self.person.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS/5,
+                                     PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS,
+                                     PersonBehaviour.FLEE: 0,
+                                     PersonBehaviour.FREEZE: 0}[self.person.behaviour]
+
         else:
-            self.person.sigma = Simulation_Constants.SIGMA_EXPLORERS if self.person.explorer else Simulation_Constants.SIGMA_RETURNERS 
-            for p in self.compute_close_persons(persons, Simulation_Constants.WEARABLE_WARNING_RADIUS):
+            self.person.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS,
+                                     PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS,
+                                     PersonBehaviour.FLEE: 0,
+                                     PersonBehaviour.FREEZE: 0}[self.person.behaviour]
+
+            for p in self.compute_close_persons(persons, sc.WEARABLE_WARNING_RADIUS):
                 if p.wearable.user_risk_level == InfectionSeverity.RED:
-                    self.person.flee2()
+                    self.person.behaviour = PersonBehaviour.FLEE
                     break
 
-    def main(self, persons: list, time: int):
-
-        #check paramters of the person
-        self.check_temperature(time)
-        self.check_oxygen(time)
+    def main(self, persons: list):
+        if self.person.status == PersonStatus.DEAD:
+            self.user_risk_level = 0
+            return
 
         #compute the risk level
         self.compute_risk_level(persons)
 
         #emit the warning for the user (which in turn calls flee)
-        if Simulation_Constants.DEVICE_ACTIVE:
+        if sc.DEVICE_ACTIVE:
             self.emit_warning(persons)  
 
 
