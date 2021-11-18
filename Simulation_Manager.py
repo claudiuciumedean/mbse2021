@@ -6,10 +6,9 @@ from matplotlib.patches import Rectangle
 
 from components.World import World
 from components.Person import Person
-from Simulation_Constants import PersonStatus, PersonBehaviour
 from CSV_Writer import CSV_Writer
+from Simulation_Constants import InfectionSeverity, PersonStatus, PersonBehaviour
 from Simulation_Constants import Simulation_Constants as sc
-from Simulation_Constants import InfectionSeverity
 
 if sc.FIXED_SEED:
   random.seed(0)
@@ -39,24 +38,25 @@ class Simluation_Manager:
     self.env = simpy.Environment()
     self.env.process(self.run())
     self.env.run(until=(24//sc.TIME_STEP)*sc.DAYS_SIMULATED)
-    #self.logSimulationStats()
+    self.logSimulationStats()
 
   def run(self):
       plt.rcParams["figure.figsize"] = (5, 6)
+
       while True:
         self.update_history()
         self.plot_world()
+
         if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
-            print(self.world.counter)
             #self.world.counter = {PersonStatus.HEALTHY: 0,
                                   #PersonStatus.INFECTED: 0,
                                   #PersonStatus.DEAD: 0,
                                   #PersonStatus.RECOVERED: 0}
-            #self.logSimulationStats() 
-        self.world.daily_infected_counter = 0
-        self.world.live(self.simulation_iteration)
+            self.logSimulationStats() 
 
+        self.world.live(self.simulation_iteration)
         self.simulation_iteration += 1
+
         yield self.env.timeout(1)  # timeout for a second
 
   def plot_world(self):
@@ -64,8 +64,8 @@ class Simluation_Manager:
     """
     color_map = {PersonStatus.HEALTHY: 'g',
                  PersonStatus.INFECTED: 'r',
-                 PersonStatus.DEAD: 'k',
-                 PersonStatus.RECOVERED: 'b'}
+                 PersonStatus.RECOVERED: 'b',
+                 PersonStatus.DEAD: 'k'}
     color_map_wearable = {InfectionSeverity.GREEN: 'g',
                           InfectionSeverity.ORANGE: 'y',
                           InfectionSeverity.RED: 'r',
@@ -73,7 +73,7 @@ class Simluation_Manager:
 
 
     plt.clf()
-    plt.subplot2grid((4, 1), (0, 0), rowspan=2)
+    plt.subplot2grid((3, 1), (0, 0), rowspan=2)
 
     plt.gca().add_patch(Rectangle((0, 0), 100, 100, linewidth=1, edgecolor='r', facecolor='none'))
     plt.gca().add_patch(Rectangle((200, 0), 100, 100, linewidth=1, edgecolor='g', facecolor='none'))
@@ -99,47 +99,38 @@ class Simluation_Manager:
     plt.title('Day: ' + str(self.simulation_iteration//(24//sc.TIME_STEP)) + ' - Hour: ' + str(self.simulation_iteration%(24//sc.TIME_STEP)*sc.TIME_STEP))
 
     #MID plot
-    plt.subplot2grid((4, 1), (2, 0), rowspan=1)
+    plt.subplot2grid((3, 1), (2, 0), rowspan=1)
     plt.plot([p[0] for p in self.history], 'g')
     plt.plot([p[1] for p in self.history], 'r')
-    plt.plot([p[2] for p in self.history], 'k')
-    plt.plot([p[3] for p in self.history], 'b')
+    plt.plot([p[2] for p in self.history], 'b')
+    plt.plot([p[3] for p in self.history], 'k')
     plt.xticks([i for i in range(self.simulation_iteration+1)],
                ['Day: ' + str(i//(24//sc.TIME_STEP)) if (i%(24//sc.TIME_STEP)*sc.TIME_STEP) == 0 else '' for i in range(self.simulation_iteration+1)],
               rotation='vertical')
 
     #Bottom plot
-    plt.subplot2grid((4, 1), (3, 0), rowspan=1)
-    plt.plot([p[1] for p in self.history], 'g')
-    plt.xticks([i for i in range(self.simulation_iteration+1)],
-               ['Day: ' + str(i//(24//sc.TIME_STEP)) if (i%(24//sc.TIME_STEP)*sc.TIME_STEP) == 0 else '' for i in range(self.simulation_iteration+1)],
-              rotation='vertical')
+    #plt.subplot2grid((4, 1), (3, 0), rowspan=1)
+    #plt.plot([p[1] for p in self.history], 'g')
+    #plt.xticks([i for i in range(self.simulation_iteration+1)],
+    #           ['Day: ' + str(i//(24//sc.TIME_STEP)) if (i%(24//sc.TIME_STEP)*sc.TIME_STEP) == 0 else '' for i in range(self.simulation_iteration+1)],
+    #          rotation='vertical')
     plt.pause(0.0001)
 
   def update_history(self):
     self.history.append([self.world.counter[PersonStatus.HEALTHY],
                          self.world.counter[PersonStatus.INFECTED],
-                         self.world.counter[PersonStatus.DEAD],
-                         self.world.counter[PersonStatus.RECOVERED]])
+                         self.world.counter[PersonStatus.RECOVERED],
+                         self.world.counter[PersonStatus.DEAD]])
 
   def logSimulationStats(self):
-    infectedPersons = 0
-    healthyPersons = 0
-    recoveredPersons = 0
-
-    for person in self.world.persons:
-      if person.infected:
-        infectedPersons += 1
-      else:
-        healthyPersons += 1
-
-      if person.recovered:
-        recoveredPersons += 1
-
     day = int(self.simulation_iteration//(24//sc.TIME_STEP))
-    #self.csv_writer.write_row([healthyPersons, infectedPersons, recoveredPersons, day])
+    #self.csv_writer.write_row([self.world.counter[PersonStatus.HEALTHY], 
+    #                           self.world.counter[PersonStatus.INFECTED],
+    #                           self.world.counter[PersonStatus.RECOVERED],
+    #                           self.world.counter[PersonStatus.DEAD],
+    #                           day])
     
-    print('Day: ', day, ' stats: ', healthyPersons, infectedPersons, recoveredPersons)
+    print('Day: ', day, ' stats: ', self.world.counter)
 
 sim_manager = Simluation_Manager()
 sim_manager.start()
