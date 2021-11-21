@@ -17,15 +17,15 @@ class World:
         self.areas = []
         self.counter = {PersonStatus.HEALTHY: 0,
                         PersonStatus.INFECTED: 0,
-                        PersonStatus.DEAD: 0,
-                        PersonStatus.RECOVERED: 0}
+                        PersonStatus.RECOVERED: 0,
+                        PersonStatus.DEAD: 0}
         self.create_areas()
     
     def live(self, time: int):
         self.counter = {PersonStatus.HEALTHY: 0,
                         PersonStatus.INFECTED: 0,
-                        PersonStatus.DEAD: 0,
-                        PersonStatus.RECOVERED: 0}
+                        PersonStatus.RECOVERED: 0,
+                        PersonStatus.DEAD: 0}
 
         for person in self.persons:
             self.counter[person.status] += 1 

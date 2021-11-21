@@ -17,13 +17,14 @@ class Simluation_Manager:
   def __init__(self):
     self.env = None
     self.world = None
-    #self.csv_writer = CSV_Writer(str(uuid.uuid1()))
+    self.csv_writer = CSV_Writer(str(uuid.uuid1()))
     self.simulation_iteration = 0
     self.history = []
   
   def start(self):
     self.world = World()
     persons = [Person(self.world, status = PersonStatus.INFECTED)]
+    persons[0].x, persons[0].y = sc.WORLD_SIZE/2, sc.WORLD_SIZE/2
 
     for i in range(1, sc.POP_SIZE):
       if random.random() < sc.EXPLORERS_PERCENTAGE:
@@ -38,14 +39,14 @@ class Simluation_Manager:
     self.env = simpy.Environment()
     self.env.process(self.run())
     self.env.run(until=(24//sc.TIME_STEP)*sc.DAYS_SIMULATED)
-    self.logSimulationStats()
+    #self.logSimulationStats()
 
   def run(self):
       plt.rcParams["figure.figsize"] = (5, 6)
 
       while True:
-        self.update_history()
-        self.plot_world()
+        #self.update_history()
+        #self.plot_world()
 
         if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
             #self.world.counter = {PersonStatus.HEALTHY: 0,
@@ -124,11 +125,11 @@ class Simluation_Manager:
 
   def logSimulationStats(self):
     day = int(self.simulation_iteration//(24//sc.TIME_STEP))
-    #self.csv_writer.write_row([self.world.counter[PersonStatus.HEALTHY], 
-    #                           self.world.counter[PersonStatus.INFECTED],
-    #                           self.world.counter[PersonStatus.RECOVERED],
-    #                           self.world.counter[PersonStatus.DEAD],
-    #                           day])
+    self.csv_writer.write_row([self.world.counter[PersonStatus.HEALTHY], 
+                               self.world.counter[PersonStatus.INFECTED],
+                               self.world.counter[PersonStatus.RECOVERED],
+                               self.world.counter[PersonStatus.DEAD],
+                               day])
     
     print('Day: ', day, ' stats: ', self.world.counter)
 

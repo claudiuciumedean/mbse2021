@@ -44,7 +44,7 @@ class Wearable:
             #print(person.wearable.user_risk_level)
             if person.wearable.user_risk_level > max_contact_risk:
                 max_contact_risk = person.wearable.user_risk_level
-        risk_counter += max_contact_risk
+        risk_counter += max_contact_risk-1
 
         # Risk counter is decreased slowly in time
         if risk_counter < self.old_risk_counter:
@@ -52,9 +52,9 @@ class Wearable:
         self.old_risk_counter = risk_counter
 
         #Compute risk level
-        if risk_counter < 2:
+        if risk_counter < 1:
             self.user_risk_level = InfectionSeverity.GREEN
-        elif risk_counter < 4:
+        elif risk_counter < 3:
             self.user_risk_level = InfectionSeverity.ORANGE
         else:
             self.user_risk_level = InfectionSeverity.RED
@@ -65,14 +65,14 @@ class Wearable:
         if random.random() < sc.REBEL_PERCENTAGE:
             return
         if self.user_risk_level == InfectionSeverity.RED:
-            self.person.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS/10,
-                                     PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS/2,
+            self.person.walk_step = {PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS/10,
+                                     PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS/2,
                                      PersonBehaviour.FLEE: 0,
                                      PersonBehaviour.FREEZE: 0}[self.person.behaviour]
 
         elif self.user_risk_level == InfectionSeverity.ORANGE:
-            self.person.walk_step = {PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS/5,
-                                     PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS,
+            self.person.walk_step = {PersonBehaviour.EXPLORER: sc.WALK_STEP_EXPLORERS/5,
+                                     PersonBehaviour.RETURNER: sc.WALK_STEP_RETURNERS,
                                      PersonBehaviour.FLEE: 0,
                                      PersonBehaviour.FREEZE: 0}[self.person.behaviour]
 

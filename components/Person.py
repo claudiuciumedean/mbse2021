@@ -62,20 +62,16 @@ class Person:
 
       if self.status == PersonStatus.INFECTED:
 
-        if time < self.disease_started_time + sc.DISEASE_DURATION/4:
-            self.temperature = sc.INITIAL_TEMPERATURE
-            self.oxygen = sc.INITIAL_OXYGEN 
-
-        elif time < self.disease_started_time + sc.DISEASE_DURATION/2:
-            self.temperature = random.uniform(37.3, 38.5)
-            self.oxygen = random.uniform(95, 99)
+        if time < self.disease_started_time + sc.DISEASE_DURATION/2:
+            self.temperature = random.uniform(37.5, 38.7)
+            self.oxygen = random.uniform(92, 99)
 
         elif time < self.disease_started_time + sc.DISEASE_DURATION:
-            self.temperature = random.uniform(38, 40)
+            self.temperature = random.uniform(38.5, 40)
             self.oxygen = random.uniform(85, 99) 
                 
         else:
-            if self.temperature >= 39.5 and self.oxygen <= 90:
+            if self.temperature >= 39.7 and self.oxygen <= 90:
                 self.status = PersonStatus.DEAD
                 self.behaviour = PersonBehaviour.FREEZE
                 self.temperature = 0

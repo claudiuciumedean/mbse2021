@@ -1,14 +1,14 @@
 class Simulation_Constants():
     TIME_STEP = 3 #Hours #Fixed
     FIXED_SEED = True #Fixed
-    DAYS_SIMULATED = 120 #Fixed
+    DAYS_SIMULATED = 150 #Fixed
 
     WORLD_SIZE = 500 #Fixed
     AREA_SIZE = 100 #Fixed
 
     POP_SIZE = 500 #Population size
-    EXPLORERS_PERCENTAGE = 0.3 #returners will be 1-EXPLORERS_PERCENTAGE
-    REBEL_PERCENTAGE = 0.2 #probability that a person ignore the wearable warnings
+    EXPLORERS_PERCENTAGE = 0.25 #returners will be 1-EXPLORERS_PERCENTAGE
+    REBEL_PERCENTAGE = 0.0 #probability that a person ignore the wearable warnings
 
     WALK_STEP_RETURNERS = 10 #maximum movement possible at each iteration (in meters?)
     WALK_STEP_EXPLORERS = 50 #maximum movement possible at each iteration (in meters?)
@@ -18,7 +18,7 @@ class Simulation_Constants():
 
     WEARABLE_DANGER_RADIUS = 5 #max radius at which the wearable think that a person can get infected (in meters?)
     WEARABLE_WARNING_RADIUS = 15 #max radius for communicating the warnings (in meters?)
-    DEVICE_ACTIVE = True
+    DEVICE_ACTIVE = False
 
 
 class InfectionSeverity():
