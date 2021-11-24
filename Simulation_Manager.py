@@ -17,7 +17,7 @@ class Simluation_Manager:
   def __init__(self):
     self.env = None
     self.world = None
-    self.csv_writer = CSV_Writer(str(uuid.uuid1()))
+    #self.csv_writer = CSV_Writer(str(uuid.uuid1()))
     self.simulation_iteration = 0
     self.history = []
   
@@ -45,15 +45,15 @@ class Simluation_Manager:
       plt.rcParams["figure.figsize"] = (5, 6)
 
       while True:
-        #self.update_history()
-        #self.plot_world()
+        self.update_history()
+        self.plot_world()
 
-        if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
+        #if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
             #self.world.counter = {PersonStatus.HEALTHY: 0,
                                   #PersonStatus.INFECTED: 0,
                                   #PersonStatus.DEAD: 0,
                                   #PersonStatus.RECOVERED: 0}
-            self.logSimulationStats() 
+            #self.logSimulationStats() 
 
         self.world.live(self.simulation_iteration)
         self.simulation_iteration += 1

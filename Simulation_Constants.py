@@ -18,7 +18,7 @@ class Simulation_Constants():
 
     WEARABLE_DANGER_RADIUS = 5 #max radius at which the wearable think that a person can get infected (in meters?)
     WEARABLE_WARNING_RADIUS = 15 #max radius for communicating the warnings (in meters?)
-    DEVICE_ACTIVE = False
+    DEVICE_ACTIVE = True
 
 
 class InfectionSeverity():
