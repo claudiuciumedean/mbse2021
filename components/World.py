@@ -26,6 +26,7 @@ class World:
                         PersonStatus.INFECTED: 0,
                         PersonStatus.RECOVERED: 0,
                         PersonStatus.DEAD: 0}
+        #self.avg = 0 #TEST
 
         for person in self.persons:
             self.counter[person.status] += 1 
@@ -34,12 +35,15 @@ class World:
         for person in self.persons:
             for close_person in person.wearable.compute_close_persons(self.persons, Disease_features.INFECTION_RADIUS):
                 self.close_persons_detected(person, close_person, time)
+            #self.avg+= len(person.wearable.compute_close_person(self.persons, Disease_features.INFECTION_RADIUS)) #TEST
 
         for person in self.persons:
             person.update_disease_status(time)
 
         for person in self.persons:
             person.wearable.main(self.persons)
+
+        #return self.avg/len(self.persons) #TEST
 
     def create_areas(self):
         areas = [

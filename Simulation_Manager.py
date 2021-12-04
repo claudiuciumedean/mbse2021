@@ -17,7 +17,7 @@ class Simluation_Manager:
   def __init__(self):
     self.env = None
     self.world = None
-    #self.csv_writer = CSV_Writer(str(uuid.uuid1()))
+    self.csv_writer = CSV_Writer(str(uuid.uuid1()))
     self.simulation_iteration = 0
     self.history = []
   
@@ -36,10 +36,11 @@ class Simluation_Manager:
     self.world.persons = persons
 
     #self.env = simpy.rt.RealtimeEnvironment(factor = .10) #factor of 1 simulation runs a process every second, 0.5 factor 2 processes every second and so on
+    #self.avg = 0 #for testing purpose
     self.env = simpy.Environment()
     self.env.process(self.run())
     self.env.run(until=(24//sc.TIME_STEP)*sc.DAYS_SIMULATED)
-    #self.logSimulationStats()
+    self.logSimulationStats()
 
   def run(self):
       plt.rcParams["figure.figsize"] = (5, 6)
@@ -48,13 +49,15 @@ class Simluation_Manager:
         self.update_history()
         self.plot_world()
 
-        #if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
+        if self.simulation_iteration % (24//sc.TIME_STEP) == 0:
             #self.world.counter = {PersonStatus.HEALTHY: 0,
                                   #PersonStatus.INFECTED: 0,
                                   #PersonStatus.DEAD: 0,
                                   #PersonStatus.RECOVERED: 0}
-            #self.logSimulationStats() 
+            self.logSimulationStats() 
 
+        #self.avg += self.world.live(self.simulation_iteration) #for test
+        
         self.world.live(self.simulation_iteration)
         self.simulation_iteration += 1
 

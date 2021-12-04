@@ -71,6 +71,8 @@ class Person:
             self.oxygen = random.uniform(85, 99) 
                 
         else:
+            #if random.random() < 1/(14*8): #TEST
+                #if random.random() >= 0.93: #TEST
             if self.temperature >= 39.7 and self.oxygen <= 90:
                 self.status = PersonStatus.DEAD
                 self.behaviour = PersonBehaviour.FREEZE
